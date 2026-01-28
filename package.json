@@ -1,0 +1,24 @@
+{
+  "name": "ojs-grabber-vite",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "watch": "vite build --watch --mode development",
+    "watch-dev": "vite build --watch",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "normalize.css": "^8.0.1",
+    "prismjs": "^1.30.0",
+    "vue": "^3.5.24",
+    "xml-formatter": "^3.6.7"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.1",
+    "vite": "^7.2.4",
+    "vite-plugin-prismjs": "^0.0.11"
+  }
+}

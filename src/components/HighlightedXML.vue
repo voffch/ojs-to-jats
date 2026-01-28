@@ -1,0 +1,60 @@
+<script setup>
+import xmlFormat from 'xml-formatter';
+import Prism from "prismjs";
+import "prismjs/themes/prism.css";
+import 'prismjs/plugins/line-numbers/prism-line-numbers.css';
+import { onMounted, computed, watch, nextTick } from "vue";
+
+const props = defineProps({
+  xmlString : {
+    type : String,
+    required : true,
+    default : ''
+  },
+});
+
+const xmlPretty = computed(() => {
+  if (props.xmlString) {
+		return xmlFormat(props.xmlString, { indentation: ' ' });
+  } else {
+    return null;
+  }
+});
+
+onMounted(() => {
+  window.Prism = window.Prism || {};
+  window.Prism.manual = true;
+  Prism.highlightAll();
+});
+
+watch(xmlPretty, () => {
+  nextTick(() => {
+    Prism.highlightAll();
+  });
+});
+</script>
+
+<template>
+  <section class="xml-wrapper">
+    <h2>XML</h2>
+    <pre><code 
+      class="language-xml" 
+      data-prismjs-copy="Копировать"
+      data-prismjs-copy-error="Ошибка копирования"
+      data-prismjs-copy-success="Скопировано!">{{ xmlPretty }}</code></pre>
+    <div class="links-wrapper">
+      <a v-if="xmlString" :href="`data:text/xml,${encodeURIComponent(xmlString)}`" download="jats.xml">Скачать XML</a>
+      <a href="https://jats4r-validator.niso.org/" target="_blank">https://jats4r-validator.niso.org/</a>
+    </div>
+  </section>
+</template>
+
+<style scoped>
+  pre, pre code {
+    white-space: pre-wrap;
+  }
+  .links-wrapper {
+    display: flex;
+    justify-content: space-between;
+  }
+</style>

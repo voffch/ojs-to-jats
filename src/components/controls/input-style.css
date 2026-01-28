@@ -1,0 +1,44 @@
+input,
+textarea {
+  width: 100%;
+}
+textarea {
+  resize: vertical;
+  min-height: 7em;
+}
+select,
+input[type="checkbox"] {
+  max-width: fit-content;
+}
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+.input-group.side-by-side {
+  flex-direction: row;
+  align-items: center;
+  gap: 1rem;
+}
+.input-group.side-by-side > * {
+  flex-grow: 1;
+}
+.input-group.side-by-side .input-group-caption {
+  width: 200px;
+  flex-grow: 0;
+  flex-shrink: 0;
+}
+.input-group .hint {
+  font-size: 0.7rem;
+  display: block;
+}
+.input-group:not(.show-ru) .ru-wrapper,
+.input-group:not(.show-en) .en-wrapper {
+  display: none;
+}
+input[type="text"] {
+  border: 1px solid rgb(143, 143, 157);
+}
+input[type="text"]:invalid {
+  border-left: 3px solid red;
+}
