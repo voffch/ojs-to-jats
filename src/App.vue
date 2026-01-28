@@ -1,21 +1,10 @@
 <script setup>
-import { ref, computed, onMounted } from "vue";
-import AppMultipleArticles from "./components/AppMultipleArticles.vue";
+import { ref, onMounted } from "vue";
 import AppSingleArticle from "./components/AppSingleArticle.vue";
 import GlobalSettings from './components/Settings.vue';
 import genSettings from "./components/settingsTemplate";
 
 const gs = ref(genSettings());
-
-const modes = {
-  'Выпуски (через OJS API)': AppMultipleArticles,
-  'Одна статья': AppSingleArticle
-};
-const selected = ref('Одна статья');
-
-const mode = computed(() => {
-  return modes[selected.value];
-});
 
 const callingUrl = ref('');
 const submissionId = ref('');
@@ -46,19 +35,11 @@ function scrollToBottom() {
     behavior: 'smooth'
   });
 }
-
-//<select class="main-selector" v-model="selected">
-//  <option v-for="(value, key) in modes" :value="key">{{ key }}</option>
-//</select>
-//<div>
-//  <p v-if="callingUrl">Плагин загружен из "{{ callingUrl }}"</p>
-//  <p v-else>Плагин не загружен с сайта</p>
-//</div>
 </script>
 
 <template>
   <GlobalSettings v-model="gs" />
-  <component :is="mode" :gs="gs" :submissionId="submissionId" />
+  <AppSingleArticle :gs="gs" :submissionId="submissionId" />
   <div id="scroll-overlay">
     <button @click="scrollToTop()">▲</button>
     <button @click="scrollToBottom()">▼</button>
@@ -66,10 +47,6 @@ function scrollToBottom() {
 </template>
 
 <style scoped>
-  .main-selector {
-    display: block;
-    margin: 0 auto 1rem auto;
-  }
   #scroll-overlay {
     position: fixed; 
     bottom: 1rem; 

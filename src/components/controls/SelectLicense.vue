@@ -41,7 +41,6 @@ const licenses = {
 const selectedLicense = ref(model.value);
 
 watch(model, () => {
-  //console.log(model.value);
   if (model.value in licenses) {
     selectedLicense.value = model.value;
   } else {

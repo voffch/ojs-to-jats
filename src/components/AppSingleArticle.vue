@@ -746,7 +746,6 @@ async function loadByApi() {
     });
     checkResponse(subResponse);
     const sub = await subResponse.json();
-    console.log(sub);
     editUrl.value = sub.urlWorkflow;
     const pubEndpoint = `${subEndpoint}/publications/${sub.currentPublicationId}`;
     const pubURL = new URL(pubEndpoint, props.gs.baseUrl);
@@ -760,7 +759,6 @@ async function loadByApi() {
     });
     checkResponse(pubResponse);
     const pub = await pubResponse.json();
-    console.log(pub);
     let doi = pub['pub-id::doi'];
     if (!doi) {
       doi = pub?.doiObject?.doi ?? ''; // OJS 3.5
