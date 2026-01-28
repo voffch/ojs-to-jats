@@ -35,6 +35,8 @@ function handleError() {
     resize : vertical;
     overflow : auto;
     scrollbar-width: none;
+    margin: 1rem 0px 2rem;
+    border: 1px solid var(--outline);
   }
   .pdf-preview-wrapper object {
     height: 100%;

@@ -266,7 +266,7 @@ const metaforaStatusExplained = computed(() => {
   return status;
 });
 
-const checkButtonText = computed(() => {
+const doiLookupButtonText = computed(() => {
   if (!props.doi) {
     return 'Для поиска по DOI введите DOI';
   } else {
@@ -289,28 +289,59 @@ watch(responseText, () => {
 
 <template>
   <section class="metafora-wrapper">
-    <h2>Метафора</h2>
+    <h2 class="small">Метафора</h2>
     <div class="api-settings-wrapper">
-      <label for="metafora-api-key">Ключ Metafora API (брать <a href="https://metafora.rcsi.science/api-keys" target="_blank">здесь</a>)</label>
-      <input v-model.lazy.trim="metaforaApiKey" @change="storeValues" id="metafora-api-key" :type="metaforaApiKeyType" />
+      <div class="field label border small">
+        <input :type="metaforaApiKeyType" v-model.lazy.trim="metaforaApiKey" @change="storeValues" id="metafora-api-key" />
+        <label for="metafora-api-key">Ключ Metafora API</label>
+        <output>брать здесь: <a class="link underline" href="https://metafora.rcsi.science/api-keys" target="_blank">https://metafora.rcsi.science/api-keys</a></output>
+      </div>
       <div class="checkbox-wrapper">
-        <label for="show-metafora-api-key">Показать ключ Metafora API</label>
-        <input type="checkbox" id="show-metafora-api-key" v-model="metaforaApiKeyShown" />
+        <label class="checkbox" for="show-metafora-api-key">
+          <input type="checkbox" id="show-metafora-api-key" v-model="metaforaApiKeyShown" />
+          <span>Показать ключ Metafora API</span>
+        </label>
       </div>
     </div>
     <template v-if="metaforaApiKey">
-      <div>
-        <button :disabled="loading || !doi" @click="checkDoi">{{ checkButtonText }}</button>
-      </div>
+      <button class="border small-round small-elevate small primary-border primary-text" :disabled="loading || !doi" @click="checkDoi">
+        <i>search</i>
+        <span>{{ doiLookupButtonText }}</span>
+      </button>
       <div class="status-wrapper">{{ metaforaStatusExplained }}</div>
-      <div v-if="metaforaStatus.searched">
-        <button :disabled="loading || !metaforaStatus.article_uid || metaforaStatus.signed_at" @click="sign">Подписать</button>
-        <button :disabled="loading || !metaforaStatus.article_uid || !metaforaStatus.signed_at" @click="unsign">Отписать</button>
-        <button :disabled="loading || !metaforaStatus.file_uid || metaforaStatus.signed_at" @click="remove">Удалить</button>
-        <button :disabled="loading || metaforaStatus.file_uid" @click="postXML">Загрузить только XML</button>
-        <button :disabled="loading || metaforaStatus.file_uid" @click="postXMLandPDF">Загрузить XML и PDF</button>
+      <div v-if="metaforaStatus.searched" class="metafora-buttons-wrapper">
+        <button class="border small-round small-elevate small primary-border primary-text" 
+                :disabled="loading || !metaforaStatus.article_uid || metaforaStatus.signed_at"
+                @click="sign">
+          <i>edit</i>
+          <span>Подписать</span>
+        </button>
+        <button class="border small-round small-elevate small primary-border primary-text" 
+                :disabled="loading || !metaforaStatus.article_uid || !metaforaStatus.signed_at"
+                @click="unsign">
+          <i>edit_off</i>
+          <span>Отписать</span>
+        </button>
+        <button class="border small-round small-elevate small primary-border primary-text" 
+                :disabled="loading || !metaforaStatus.file_uid || metaforaStatus.signed_at"
+                @click="remove">
+          <i>delete</i>
+          <span>Удалить</span>
+        </button>
+        <button class="border small-round small-elevate small primary-border primary-text" 
+                :disabled="loading || metaforaStatus.file_uid"
+                @click="postXML">
+          <i>file_copy</i>
+          <span>Загрузить только XML</span>
+        </button>
+        <button class="border small-round small-elevate small primary-border primary-text" 
+                :disabled="loading || metaforaStatus.file_uid"
+                @click="postXMLandPDF">
+          <i>picture_as_pdf</i>
+          <span>Загрузить XML и PDF</span>
+        </button>
       </div>
-      <h3>Результат запроса к ИС Метафора</h3>
+      <h3 class="small">Результат запроса к ИС Метафора</h3>
       <div class="status-wrapper">{{ responseExplained }}</div>
       <pre><code 
         class="language-json" 
@@ -325,26 +356,33 @@ watch(responseText, () => {
 </template>
 
 <style scoped>
-  .wrapper {
-    margin-top: 2rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
   .api-settings-wrapper {
     display: flex;
     flex-direction: column;
     border: 1px solid gray;
-    margin-bottom: 1rem;
-    padding: 0.5rem;
+    margin: 1rem 0;
+    padding: 1rem 0.5rem;
   }
   .checkbox-wrapper {
-    align-self: flex-end;
+    display: flex;
+    align-items: center;
+    margin-top: 0.5rem;
   }
-  .checkbox-wrapper label {
-    margin-right: 0.2rem;
+  .field output {
+    padding-top: 0;
+    padding-bottom: 0;
   }
   pre {
     margin: 0;
+  }
+  .status-wrapper {
+    margin: 1rem 0;
+    padding: 0.5rem;
+    border: 1px dotted black;
+  }
+  .metafora-buttons-wrapper {
+    display: flex;
+    gap: 0.25rem;
+    flex-wrap: wrap;
   }
 </style>

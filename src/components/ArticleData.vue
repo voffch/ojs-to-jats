@@ -57,6 +57,19 @@ function generateCopyrightHolders() {
   }
 }
 
+function correctDates() {
+  function tryCorrectingDate(date) {
+    if (date.match(/^\d{2}\.\d{2}\.\d{4}$/)) {
+      return date.split('.').reverse().join('-');
+    } else {
+      return date;
+    }
+  }
+  meta.value.dateSubmitted = tryCorrectingDate(meta.value.dateSubmitted);
+  meta.value.dateAccepted = tryCorrectingDate(meta.value.dateAccepted);
+  meta.value.datePublished = tryCorrectingDate(meta.value.datePublished);
+}
+
 const urlRegexp = 'https?\:\/\/.+';
 const dateRegexp = '\\d{4}-[01]\\d-[0-3]\\d';
 </script>
@@ -64,7 +77,7 @@ const dateRegexp = '\\d{4}-[01]\\d-[0-3]\\d';
 <template>
   <section class="article-data-wrapper">
 
-    <h2>Статья</h2>
+    <h3 class="small">Статья</h3>
     <SelectInput 
       caption="Тип публикации *"
       :options="{
@@ -79,7 +92,7 @@ const dateRegexp = '\\d{4}-[01]\\d-[0-3]\\d';
       v-model="meta.articleType" />
     <TextInput 
       caption="DOI" 
-      hint="не гиперссылка, просто номер DOI"
+      hint="в поле вводится не гиперссылка, а просто номер DOI"
       pattern="10\.\d{4,9}\/[\-\._;\(\)\/\:a-zA-Z0-9]+" 
       :showOptions="gs.show" 
       v-model="meta.doi" 
@@ -87,7 +100,6 @@ const dateRegexp = '\\d{4}-[01]\\d-[0-3]\\d';
     <TextInput caption="EDN" hint="6 заглавных латинских букв" pattern="[A-Z]{6}" :showOptions="gs.show" v-model="meta.edn" />
     <TextInput 
       caption="URL страницы публикации на сайте журнала"
-      hint="ссылка на страницу публикации на сайте журнала"
       :pattern="urlRegexp"
       :showOptions="gs.show" 
       v-model="meta.pageUrl"
@@ -103,30 +115,42 @@ const dateRegexp = '\\d{4}-[01]\\d-[0-3]\\d';
     <BilingualTextInput caption="Название публикации *" :showOptions="gs.show" v-model="meta.titles" />
     <BilingualTextInput caption="Аннотация" textarea :showOptions="gs.show" v-model="meta.abstracts" />
     <div class="modify-content-buttons">
-      <button @click="() => cleanHtmlTags()">Убрать &lt;тэги&gt; из названия и аннотации</button>
+      <button class="border small-round vertical small-elevate primary-border primary-text" @click="() => cleanHtmlTags()">Убрать &lt;тэги&gt; из названия и аннотации</button>
     </div>
     <BilingualTextInput caption="Ключевые слова" hint="перечислены через точку с запятой" :showOptions="gs.show" v-model="meta.keywords" />
     <div class="modify-content-buttons">
-      <button @click="() => changeKeywordSeparators()">Поменять "," на ";"</button>
+      <button class="border small-round vertical small-elevate primary-border primary-text" @click="() => changeKeywordSeparators()">Поменять "," на ";"</button>
     </div>
 
-    <h3>Авторы и аффилиации</h3>
+    <h4 class="small">Авторы и аффилиации</h4>
     <template v-for="(author, authorIndex) in meta.authors" :key="authorIndex">
-      <h4>{{ `Автор ${authorIndex + 1}` }}</h4>
+      <h5 class="small">{{ `Автор ${authorIndex + 1}` }}</h5>
       <AuthorData :gs="gs" v-model="meta.authors[authorIndex]" />
       <div class="author-management-buttons">
-        <button @click="() => addAuthor(authorIndex)">Добавить</button>
-        <button v-if="meta.authors.length > 1" @click="() => deleteAuthor(authorIndex)">Удалить</button>
+        <button class="border small-round small-elevate small primary-border primary-text" @click="() => addAuthor(authorIndex)">
+          <i>add</i>
+          <span>Добавить автора</span>
+        </button>
+        <button v-if="meta.authors.length > 1" class="border small-round small-elevate small primary-border primary-text" @click="() => deleteAuthor(authorIndex)">
+          <i>remove</i>
+          <span>Удалить автора</span>
+        </button>
       </div>
     </template>
     <div v-if="meta.authors.length === 0" class="author-management-buttons">
-      <button @click="() => addAuthor(authorIndex)">Добавить</button>
+      <button class="border small-round small-elevate small primary-border primary-text" @click="() => addAuthor(0)">
+        <i>add</i>
+        <span>Добавить автора</span>
+      </button>
     </div>
 
-    <h3>Публикационные данные</h3>
+    <h4 class="small">Публикационные данные</h4>
     <TextInput caption="Дата получения публикации" hint="в формате YYYY-MM-DD" :pattern="dateRegexp" :showOptions="gs.show" v-model="meta.dateSubmitted" />
     <TextInput caption="Дата принятия публикации" hint="в формате YYYY-MM-DD" :pattern="dateRegexp" :showOptions="gs.show" v-model="meta.dateAccepted" />
     <TextInput caption="Дата публикации *" hint="в формате YYYY-MM-DD" :pattern="dateRegexp" :showOptions="gs.show" v-model="meta.datePublished" />
+    <div class="modify-content-buttons">
+      <button class="border small-round vertical small-elevate primary-border primary-text" @click="correctDates">Переписать даты DD.MM.YYYY как YYYY-MM-DD</button>
+    </div>
     <TextInput caption="Том" :showOptions="gs.show" v-model="meta.volume" />
     <TextInput caption="Номер" :showOptions="gs.show" v-model="meta.issue" />
     <CheckboxInput caption="Использовать Elocation ID *" :showOptions="gs.show" v-model="meta.useElocationId" />
@@ -138,33 +162,30 @@ const dateRegexp = '\\d{4}-[01]\\d-[0-3]\\d';
     <BilingualTextInput caption="Благодарности" :showOptions="gs.show" v-model="meta.acknowledgments" />
     <BilingualTextInput caption="Сведения о финансировании" :showOptions="gs.show" v-model="meta.fundings" />
 
-    <h3>Авторские права</h3>
+    <h4 class="small">Авторские права</h4>
     <BilingualTextInput caption="Правообладатель" :showOptions="gs.show" v-model="meta.copyrightHolders" />
     <div class="modify-content-buttons">
-      <button @click="generateCopyrightHolders">Заполнить авторами</button>
+      <button class="border small-round vertical small-elevate primary-border primary-text" @click="generateCopyrightHolders">Заполнить авторами</button>
     </div>
     <SelectLicense :showOptions="gs.show" v-model="meta.licenseUrl" :pattern="urlRegexp" />
     <TextInput caption="Год фиксации" hint="в формате YYYY" pattern="\d{4}" :showOptions="gs.show" v-model="meta.copyrightYear" />
 
-    <h3>Библиография</h3>
+    <h4 class="small">Библиография</h4>
     <BilingualTextInput caption="Список литературы" hint="одна строчка - один источник" textarea :showOptions="gs.show" v-model="meta.citations" />
 
   </section>
 </template>
 
 <style scoped>
-  .article-data-wrapper {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
   .author-management-buttons {
     display: flex;
     gap: 0.5rem;
+    margin-top: 1rem;
   }
   .modify-content-buttons {
     display: flex;
     gap: 0.5rem;
     justify-content: flex-end;
+    margin-top: 0.5rem;
   }
 </style>

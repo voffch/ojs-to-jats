@@ -40,25 +40,39 @@ function scrollToBottom() {
 <template>
   <GlobalSettings v-model="gs" />
   <AppSingleArticle :gs="gs" :submissionId="submissionId" />
-  <div id="scroll-overlay">
-    <button @click="scrollToTop()">▲</button>
-    <button @click="scrollToBottom()">▼</button>
+  <div class="nav-menu">
+    <button class="small circle">
+      <i>south_west</i>
+    </button>
+    <menu class="bottom transparent no-wrap left right-align">
+      <li>
+        <button class="fill" @click="scrollToTop()">
+          <i>arrow_upward</i>
+          <span>Наверх</span>
+        </button>
+      </li>
+      <li>
+        <button class="fill" @click="scrollToBottom()">
+          <i>arrow_downward</i>
+          <span>Вниз</span>
+        </button>
+      </li>
+      <li>
+        <button class="fill">
+          <i>help</i>
+          <span>Справка</span>
+        </button>
+      </li>
+    </menu>
   </div>
 </template>
 
 <style scoped>
-  #scroll-overlay {
-    position: fixed; 
-    bottom: 1rem; 
-    right: 0.5rem; 
-    display: flex; 
-    flex-direction: column; 
-    gap: 10px; 
+  .nav-menu {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    opacity: 0.7;
     z-index: 9999;
-  }
-  #scroll-overlay button {
-    padding: 0;
-    cursor: pointer;
-    opacity: 0.5;
   }
 </style>

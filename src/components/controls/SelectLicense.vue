@@ -72,5 +72,5 @@ function handleSelect(e) {
 </template>
 
 <style scoped>
-  @import "./input-style.css";
+
 </style>

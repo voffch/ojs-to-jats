@@ -36,15 +36,15 @@ watch(xmlPretty, () => {
 
 <template>
   <section class="xml-wrapper">
-    <h2>XML</h2>
+    <h2 class="small">XML</h2>
     <pre><code 
       class="language-xml" 
       data-prismjs-copy="Копировать"
       data-prismjs-copy-error="Ошибка копирования"
       data-prismjs-copy-success="Скопировано!">{{ xmlPretty }}</code></pre>
     <div class="links-wrapper">
-      <a v-if="xmlString" :href="`data:text/xml,${encodeURIComponent(xmlString)}`" download="jats.xml">Скачать XML</a>
-      <a href="https://jats4r-validator.niso.org/" target="_blank">https://jats4r-validator.niso.org/</a>
+      <a v-if="xmlString" class="link underline" :href="`data:text/xml,${encodeURIComponent(xmlString)}`" download="jats.xml">Скачать XML</a>
+      <a class="link underline" href="https://jats4r-validator.niso.org/" target="_blank">https://jats4r-validator.niso.org/</a>
     </div>
   </section>
 </template>

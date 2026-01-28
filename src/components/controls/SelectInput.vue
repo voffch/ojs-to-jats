@@ -28,14 +28,14 @@ const unique_key = useId();
 </script>
 
 <template>
-  <div class="input-group" :class="{ 'side-by-side' : showOptions.sideBySide }">
-    <label class="input-group-caption" :for="unique_key">{{ caption }}</label>
+  <div class="field border label">
     <select :id="unique_key" v-model="model">
       <option v-for="(value, key) in options" :value="key">{{ value }}</option>
     </select>
+    <label :for="unique_key">{{ caption }}</label>
   </div>
 </template>
 
 <style scoped>
-  @import "./input-style.css";
+
 </style>

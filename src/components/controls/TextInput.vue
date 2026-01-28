@@ -39,7 +39,6 @@ const props = defineProps({
 });
 
 watch(model, () => {
-  //model.value = model.value.trim();
   emit('change');
 });
 
@@ -47,17 +46,23 @@ const unique_key = useId();
 </script>
 
 <template>
-  <div class="input-group" :class="{ 'side-by-side' : showOptions.sideBySide }">
-    <label class="input-group-caption" :for="unique_key">{{ caption }}</label>
-    <div>
-      <textarea v-if="textarea" :id="unique_key" v-model.lazy.trim="model"></textarea>
-      <input v-else type="text" :pattern="pattern" :id="unique_key" v-model.lazy.trim="model" />
-      <a v-if="url && model" class="text-input-goto-link" target="_blank" :href="url">{{ url }}</a>
-      <span v-if="hint" class="hint">{{ hint }}</span>
-    </div>
+  <div class="field label small border">
+    <textarea v-if="textarea" :id="unique_key" v-model.lazy.trim="model"></textarea>
+    <input v-else type="text" :pattern="pattern" :id="unique_key" v-model.lazy.trim="model" />
+    <label :for="unique_key">{{ caption }}</label>
+    <output v-if="hint">{{ hint }}</output>
+    <output v-if="url && model"><a class="link underline" target="_blank" :href="url">{{ url }}</a></output>
   </div>
 </template>
 
 <style scoped>
-  @import "./input-style.css";
+  .field textarea {
+    resize: vertical;
+    min-height: 7em;
+    max-block-size: none;
+  }
+  .field output {
+    padding-top: 0;
+    padding-bottom: 0;
+  }
 </style>

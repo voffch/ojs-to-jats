@@ -24,12 +24,19 @@ const unique_key = useId();
 </script>
 
 <template>
-  <div class="input-group" :class="{ 'side-by-side' : showOptions.sideBySide }">
-    <label class="input-group-caption" :for="unique_key">{{ caption }}</label>
-    <input type="checkbox" :id="unique_key" v-model="model" />
+  <div class="field">
+    <label class="switch" :for="unique_key">
+      <input type="checkbox" :id="unique_key" v-model="model" />
+      <span>{{ caption }}</span>
+    </label>
   </div>
 </template>
 
 <style scoped>
-  @import "./input-style.css";
+  .switch span {
+    padding-left: 0.5rem;
+  }
+  .field {
+    justify-content: center;
+  }
 </style>

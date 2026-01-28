@@ -22,14 +22,27 @@ function storeValues(e) {
 
 <template>
   <section class="global-settings-wrapper">
-    <label for="base-url">Base URL журнала в OJS (должен заканчиваться на "/")</label>
-    <input v-model.lazy.trim="model.baseUrl" @change="storeValues" id="base-url" type="text" pattern='https?:\/\/.+\/' />
-    <div class="show-settings">
-      <span>Параметры отображения:</span>
-      <label :for="`article-show-ru`"><input type="checkbox" :id="`article-show-ru`" v-model="model.show.ru"  @change="storeValues" /> RUS</label>
-      <label :for="`article-show-en`"><input type="checkbox" :id="`article-show-en`" v-model="model.show.en"  @change="storeValues" /> ENG</label>
-      <label :for="`article-side-by-side`"><input type="checkbox" :id="`article-side-by-side`" v-model="model.show.sideBySide"  @change="storeValues" /> Горизонтально</label>
+    <div class="field label border small">
+      <input type="text" v-model.lazy.trim="model.baseUrl" @change="storeValues" id="base-url" pattern='https?:\/\/.+\/' />
+      <label for="base-url">Base URL журнала в OJS (должен заканчиваться на "/")</label>
     </div>
+    <fieldset>
+      <legend>Параметры отображения текстовых полей:</legend>
+      <nav>
+        <label class="checkbox" :for="`article-show-ru`">
+          <input type="checkbox" :id="`article-show-ru`" v-model="model.show.ru"  @change="storeValues" />
+          <span>RUS</span>
+        </label>
+        <label class="checkbox" :for="`article-show-en`">
+          <input type="checkbox" :id="`article-show-en`" v-model="model.show.en"  @change="storeValues" />
+          <span>ENG</span>
+        </label>
+        <label class="checkbox" :for="`article-side-by-side`">
+          <input type="checkbox" :id="`article-side-by-side`" v-model="model.show.sideBySide"  @change="storeValues" />
+          <span>Горизонтально</span>
+        </label>
+      </nav>
+    </fieldset>
   </section>
 </template>
 
@@ -39,26 +52,9 @@ function storeValues(e) {
     flex-direction: column;
     border: 1px solid gray;
     margin-bottom: 1rem;
-    padding: 0.5rem;
+    padding: 1rem 0.5rem;
   }
-  .checkbox-wrapper {
-    align-self: flex-end;
-  }
-  .checkbox-wrapper label {
-    margin-right: 0.2rem;
-  }
-  input[type="text"] {
-    width: 100%;
-    border: 1px solid rgb(143, 143, 157);
-  }
-  input[type="text"]:invalid {
-    border-left: 3px solid red;
-  }
-  input {
-    margin-bottom: 0.5rem;
-  }
-  .show-settings {
-    display: flex;
-    gap: 1rem;
+  .global-settings-wrapper fieldset {
+    margin-block-start: 0.5rem !important;
   }
 </style>

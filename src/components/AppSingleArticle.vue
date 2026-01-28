@@ -103,10 +103,10 @@ async function loadPublication() {
         }
         if (!apiAccessed) {
           const newLang = firstStatus.lang === 'en' ? 'ru' : 'en';
-          await sleep(500);
+          await sleep(250);
           const secondStatus = await loadOjsWebpage(newLang);
           if (secondStatus.lang && (secondStatus.lang !== firstStatus.lang)) {
-            await sleep(500);
+            await sleep(250);
             switchLanguageOnly(firstStatus.lang);
           }
         }
@@ -131,6 +131,7 @@ async function switchLanguageOnly(lang) {
   logInfo(`Переключаю язык на ${lang} запросом к ${url}`);
   const response = await fetch(url, {
     method: 'GET',
+    credentials: 'include',
     headers: {
       'Accept': 'text/html'
     }
@@ -170,7 +171,7 @@ async function loadOjsWebpage(newLang=null) {
   logInfo(`Загрузка веб-страницы ${url}`);
   const response = await fetch(url, {
     method: 'GET',
-    //credentials: 'include',
+    credentials: 'include',
     headers: {
       'Accept': 'text/html'
     }
@@ -851,18 +852,27 @@ const loadButtonText = computed(() => {
 <template>
   <div class="load-controls-with-log-wrapper">
     <div class="load-controls-wrapper">
-      <div class="load-controls">
-        <label for="article-number">Статья № <input type="text" id="article-number" placeholder="submission ID" pattern="\d+" v-model.trim="submissionId" /></label>
-        <div><a :href="articleUrl" target="_blank">{{ articleUrl }}</a></div>
-        <button :disabled="loading" @click="loadPublication">{{ loadButtonText }}</button>
+      <div class="submission-id field label border small">
+        <input type="text" id="article-number" placeholder="" pattern="\d+" v-model.trim="submissionId" />
+        <label for="article-number">Статья № (Submission ID)</label>
       </div>
-      <div class="load-controls-settings">
-        <label for="update-journal-meta">Обновлять также метаданные <strong>журнала</strong></label>
-        <input type="checkbox" id="update-journal-meta" v-model="updateJournalMeta" />
+      <button class="border small-round small-elevate primary-border primary-text" :disabled="loading" @click="loadPublication">
+        <i>arrow_circle_down</i>
+        <span>{{ loadButtonText }}</span>
+      </button>
+      <div class="switch-wrapper">
+        <label class="switch-label" for="update-journal-meta">При загрузке обновлять метаданные <strong>журнала</strong></label>
+        <label class="switch">
+          <input type="checkbox" id="update-journal-meta" v-model="updateJournalMeta" />
+          <span></span>
+        </label>
       </div>
     </div>
-    <div v-if="editUrl" class="edit-link-wrapper">
-      <a :href="editUrl" target="_blank">Редактировать статью на сайте OJS</a>
+    <div>
+      Страница статьи на сайте журнала: <a class="article-url link underline" :href="articleUrl" target="_blank">{{ articleUrl }}</a>
+    </div>
+    <div v-if="editUrl">
+      <a class="article-url link underline" :href="editUrl" target="_blank">Редактировать статью на сайте OJS</a>
     </div>
     <div class="load-log">
       <p v-if="loadLog.length === 0" class="log-info">Здесь будет лог загрузки</p>
@@ -876,18 +886,20 @@ const loadButtonText = computed(() => {
 </template>
 
 <style scoped>
-  .load-controls {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.5rem;
+  .submission-id {
+    width: fit-content;
   }
-  .load-controls-settings {
+  .load-controls-wrapper {
+    display: flex;
+    gap: 1rem;
+  }
+  .switch-wrapper {
     display: flex;
     align-items: center;
     justify-content: flex-end;
+    text-align: right;
     gap: 0.5rem;
-    margin-top: 0.5rem;
+    margin: 0.5rem 0 0.5rem auto;
   }
   .load-log {
     font-size: 0.8rem;
@@ -896,7 +908,8 @@ const loadButtonText = computed(() => {
     border: 1px dotted black;
   }
   .load-log p {
-    margin: 0;
+    margin: 0 !important;
+    line-height: 1.25;
   }
   .load-log .log-warning {
     color: darksalmon;
@@ -904,10 +917,8 @@ const loadButtonText = computed(() => {
   .log-error {
     color: darkred;
   }
-  input[type="text"] {
-    border: 1px solid rgb(143, 143, 157);
-  }
-  input[type="text"]:invalid {
-    border-left: 3px solid red;
+  .switch-label {
+    font-size: 1rem;
+    cursor: pointer;
   }
 </style>

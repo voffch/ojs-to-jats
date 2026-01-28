@@ -53,32 +53,40 @@ const linesMessageEn = computed(() => countLines(model.value.en));
 </script>
 
 <template>
-  <div class="input-group" :class="{ 'show-ru' : showOptions.ru, 'show-en' : showOptions.en, 'side-by-side' : showOptions.sideBySide }">
-    <span class="input-group-caption">{{ caption }}</span>
-    <div class="ru-wrapper">
-      <label :for="`ru-${unique_key}`">РУС</label>
-      <template v-if="textarea">
-        <textarea :id="`ru-${unique_key}`" v-model.lazy.trim="model.ru"></textarea>
-        <span class="lines-message">{{ linesMessageRu }}</span>
-      </template>
+  <div class="input-group" :class="{ 'show-ru' : showOptions.ru, 'show-en' : showOptions.en, 'grid' : showOptions.sideBySide }">
+    <div class="ru-wrapper field label small border" :class="{ 's6' : (showOptions.sideBySide && showOptions.en), 's12' : !showOptions.en }">
+      <textarea v-if="textarea" :id="`ru-${unique_key}`" v-model.lazy.trim="model.ru"></textarea>
       <input v-else type="text" :id="`ru-${unique_key}`" v-model.lazy.trim="model.ru" />
-      <span v-if="hint" class="hint">{{ hint }}</span>
+      <label :for="`ru-${unique_key}`">{{ `${caption} (РУС)` }}</label>
+      <output v-if="textarea" class="lines-message">{{ linesMessageRu }}</output>
+      <output v-if="hint">{{ hint }}</output>
     </div>
-    <div class="en-wrapper">
-      <label :for="`en-${unique_key}`">ENG</label>
-      <template v-if="textarea">
-        <textarea :id="`en-${unique_key}`" v-model.lazy.trim="model.en"></textarea>
-        <span class="lines-message">{{ linesMessageEn }}</span>
-      </template>
+    <div class="en-wrapper field label small border" :class="{ 's6' : (showOptions.sideBySide && showOptions.ru), 's12' : !showOptions.ru }">
+      <textarea v-if="textarea" :id="`en-${unique_key}`" v-model.lazy.trim="model.en"></textarea>
       <input v-else type="text" :id="`en-${unique_key}`" v-model.lazy.trim="model.en" />
-      <span v-if="hint" class="hint">{{ hint }}</span>
+      <label :for="`en-${unique_key}`">{{ `${caption} (ENG)` }}</label>
+      <output v-if="textarea" class="lines-message">{{ linesMessageEn }}</output>
+      <output v-if="hint">{{ hint }}</output>
     </div>
   </div>
 </template>
 
 <style scoped>
-  @import "./input-style.css";
-  .lines-message {
-    font-size: 0.9rem;
+  .input-group:not(.show-ru) .ru-wrapper,
+  .input-group:not(.show-en) .en-wrapper {
+    display: none;
+  }
+  .input-group .field textarea {
+    resize: vertical;
+    min-height: 7em;
+    block-size: 7em;
+    max-block-size: 50em;
+  }
+  .field output {
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+  .input-group {
+    margin-block-start: 1rem;
   }
 </style>

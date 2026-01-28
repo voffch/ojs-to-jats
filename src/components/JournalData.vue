@@ -32,7 +32,7 @@ const issnRegex = '\\d{4}-\\d{3}[\\dX]';
 
 <template>
   <section class="journal-data-wrapper">
-    <h2>Журнал</h2>
+    <h3 class="small">Журнал</h3>
     <BilingualTextInput caption="Журнал" :showOptions="gs.show" v-model="meta.titles" />
     <TextInput caption="ISSN" hint="в формате 1234-5678" :pattern="issnRegex" :showOptions="gs.show" v-model="meta.issn" />
     <TextInput caption="eISSN" hint="в формате 1234-5678" :pattern="issnRegex" :showOptions="gs.show" v-model="meta.eissn" />
@@ -41,9 +41,5 @@ const issnRegex = '\\d{4}-\\d{3}[\\dX]';
 </template>
 
 <style scoped>
-  .journal-data-wrapper {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
+
 </style>
