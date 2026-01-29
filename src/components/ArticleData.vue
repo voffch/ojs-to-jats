@@ -70,6 +70,13 @@ function correctDates() {
   meta.value.datePublished = tryCorrectingDate(meta.value.datePublished);
 }
 
+function removeNames(lang) {
+  for (const author of meta.value.authors) {
+    author.surnames[lang] = '';
+    author.givennames[lang] = '';
+  }
+}
+
 const urlRegexp = 'https?\:\/\/.+';
 const dateRegexp = '\\d{4}-[01]\\d-[0-3]\\d';
 </script>
@@ -131,7 +138,7 @@ const dateRegexp = '\\d{4}-[01]\\d-[0-3]\\d';
           <i>add</i>
           <span>Добавить автора</span>
         </button>
-        <button v-if="meta.authors.length > 1" class="border small-round small-elevate small primary-border primary-text" @click="() => deleteAuthor(authorIndex)">
+        <button v-if="meta.authors.length >= 1" class="border small-round small-elevate small primary-border primary-text" @click="() => deleteAuthor(authorIndex)">
           <i>remove</i>
           <span>Удалить автора</span>
         </button>
@@ -142,6 +149,10 @@ const dateRegexp = '\\d{4}-[01]\\d-[0-3]\\d';
         <i>add</i>
         <span>Добавить автора</span>
       </button>
+    </div>
+    <div class="modify-content-buttons">
+      <button class="border small-round vertical small-elevate primary-border primary-text" @click="() => removeNames('ru')">Убрать ФИО (РУС)</button>
+      <button class="border small-round vertical small-elevate primary-border primary-text" @click="() => removeNames('en')">Убрать ФИО (ENG)</button>
     </div>
 
     <h4 class="small">Публикационные данные</h4>
