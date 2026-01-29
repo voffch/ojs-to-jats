@@ -21,6 +21,11 @@ const props = defineProps({
   doi: {
     type : String,
     required : true
+  },
+  pdfUrl: {
+    type : String,
+    required : true,
+    default : ''
   }
 });
 
@@ -53,31 +58,37 @@ function explainResponse(msg) {
   responseExplained.value = `${msg} (HTTP ${responseStatusCode.value}) [${props.doi}]`;
 }
 
+// because this in manifest.json
+// "host_permissions": [
+//   "https://metafora.rcsi.science/*"
+// ],
+// is not enabled by default in any case
 const metaforaHostPattern = 'https://metafora.rcsi.science/*';
 
-async function requestMetaforaHostPermissions() {
-  // because this in manifest.json
-  // "host_permissions": [
-  //   "https://metafora.rcsi.science/*"
-  // ],
-  // is not enabled by default in any case
+async function requestHostPermissions(href=null) {
   let granted = false;
   try {
+    const originArray = [metaforaHostPattern];
+    if (href) {
+      const url = new URL(href);
+      const matchPattern = `${url.protocol}//${url.hostname}/*`;
+      originArray.push(matchPattern);
+    }
     granted = await chrome.permissions.request({
-      origins: [metaforaHostPattern]
+      origins: originArray
     });
   } catch(e) {
     console.error(e.message);
-    throw new Error(`Ошибка при запросе разрешения на доступ к ${metaforaHostPattern}`);
+    throw new Error(`Ошибка при запросе разрешения на доступ к ${href}`);
   }
   return granted;
 }
 
-async function queryAPI(httpMethod, urlObject, body=null) {
+async function queryAPI(httpMethod, urlObject, body=null, takeForGranted=false) {
   loading.value = true;
   let json = null;
   try {
-    const granted = await requestMetaforaHostPermissions();
+    const granted = takeForGranted || await requestHostPermissions();
     if (!granted) {
       throw new Error(`Вы не разрешили плагину доступ к ${metaforaHostPattern}`);
     }
@@ -105,6 +116,7 @@ async function queryAPI(httpMethod, urlObject, body=null) {
     responseText.value = JSON.stringify(json, null, 2);
   } catch(e) {
     responseText.value = `${e.message}`;
+    explainResponse(e.message);
     metaforaStatus.value = genMetaforaStatus();
   } finally {
     loading.value = false;
@@ -245,8 +257,62 @@ async function postXML() {
 }
 
 async function postXMLandPDF() {
-  const url = new URL(`https://metafora.rcsi.science/api/v2/files/jats/xml_pdf/`);
-  console.log('a');
+  loading.value = true;
+  let pdfBlob = null;
+  try {
+    if (!props.pdfUrl) {
+      throw new Error('Нет ссылки на PDF статьи');
+    }
+    const granted = await requestHostPermissions(props.pdfUrl);
+    if (!granted) {
+      throw new Error(`Вы не разрешили плагину доступ к ${metaforaHostPattern} или ${props.pdfUrl}`);
+    }
+    const response = await fetch(props.pdfUrl, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/pdf'
+      }
+    });
+    responseStatusCode.value = response.status;
+    if (!response.ok) {
+        throw new Error(`Ошибка ${response.status} при загрузке PDF`);
+    }
+    const contentType = response.headers.get("content-type");
+    if (!contentType || !contentType.includes("application/pdf")) {
+      throw new Error(`Ошибка - ответ в формате "${contentType}", а не application/pdf`);
+    }
+    pdfBlob = await response.blob();
+    //pdfBlob = new Blob([pdfBlob], { type: 'application/pdf' }); - unnecessary, or else what am I checking the mime type for?
+    const url = new URL(`https://metafora.rcsi.science/api/v2/files/jats/xml_pdf/`);
+    const body = new FormData();
+    const xmlBlob = new Blob([props.xmlString], { type: 'text/xml' });
+    body.append('xml', xmlBlob, 'jats.xml');
+    body.append('pdf', pdfBlob, 'file.pdf');
+    const payload = await queryAPI('POST', url, body, true);
+    if (payload) {
+      switch (responseStatusCode.value) {
+        case 200:
+          metaforaStatus.value.file_uid = payload.data.file_uid;
+          break;
+        default:
+          break;
+      }
+    }
+    const statuses = {
+      200: 'Файл успешно загружен и принят к обработке',
+      400: 'Ошибка загрузки или базы данных',
+      403: 'Нет доступа',
+      404: 'Журналы не найдены для организации',
+      409: 'Конфликт - файл уже существует или проблемы с правами',
+      422: 'Ошибка валидации'
+    }
+    explainResponse(`Результат загрузки XML и PDF: ${statuses[responseStatusCode.value] || ''}`);
+  } catch (e) {
+    explainResponse(`Результат загрузки XML и PDF: произошла ошибка`);
+    responseText.value = `${e.message}`;
+  } finally {
+    loading.value = false;
+  }
 }
 
 const metaforaStatusExplained = computed(() => {

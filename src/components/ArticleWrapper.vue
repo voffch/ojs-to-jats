@@ -38,7 +38,7 @@ const xmlString = computed(() => {
   <JournalData :gs="gs" v-model="journalMeta" />
   <ArticleData :gs="gs" v-model="articleMeta" />
   <HighlightedXML :xmlString="xmlString" />
-  <Metafora :xmlString="xmlString" :doi="articleMeta.doi" />
+  <Metafora :xmlString="xmlString" :doi="articleMeta.doi" :pdfUrl="articleMeta.pdfUrl" />
 </template>
 
 <style scoped>

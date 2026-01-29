@@ -299,15 +299,28 @@ export default function generateXML(jmeta, ameta) {
       articleMeta.appendChild(kwdGroup);
     }
   }
-  for (const lang in ameta.fundings) {
-    if (ameta.fundings[lang]) {
-      const fundingGroup = xml.createElementNS(ns, 'funding-group');
-      fundingGroup.setAttribute('xml:lang', lang);
-      const fundingStatement = xml.createElementNS(ns, 'funding-statement');
-      fundingStatement.textContent = ameta.fundings[lang];
-      fundingGroup.appendChild(fundingStatement);
-      articleMeta.appendChild(fundingGroup);
+  //two separate funding-group
+  //for (const lang in ameta.fundings) {
+  //  if (ameta.fundings[lang]) {
+  //    const fundingGroup = xml.createElementNS(ns, 'funding-group');
+  //    fundingGroup.setAttribute('xml:lang', lang);
+  //    const fundingStatement = xml.createElementNS(ns, 'funding-statement');
+  //    fundingStatement.textContent = ameta.fundings[lang];
+  //    fundingGroup.appendChild(fundingStatement);
+  //    articleMeta.appendChild(fundingGroup);
+  //  }
+  //}
+  if (ameta.fundings.en || ameta.fundings.ru) {
+    const fundingGroup = xml.createElementNS(ns, 'funding-group');
+    for (const lang in ameta.fundings) {
+      if (ameta.fundings[lang]) {
+        const fundingStatement = xml.createElementNS(ns, 'funding-statement');
+        fundingStatement.setAttribute('xml:lang', lang);
+        fundingStatement.textContent = ameta.fundings[lang];
+        fundingGroup.appendChild(fundingStatement);
+      }
     }
+    articleMeta.appendChild(fundingGroup);
   }
   // back
   const back = xml.getElementsByTagNameNS(ns, 'back')[0];

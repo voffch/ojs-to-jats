@@ -36,7 +36,7 @@ export function genArticleMeta() {
       en : '',
       ru : ''
     },
-    authors : [genAuthorMeta()],
+    authors : [],
     copyrightHolders : {
       en : '',
       ru : ''
