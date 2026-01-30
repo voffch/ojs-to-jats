@@ -49,7 +49,7 @@ function openHelp() {
   <AppSingleArticle :gs="gs" :submissionId="submissionId" />
   <div class="nav-menu">
     <button class="small circle">
-      <i>south_west</i>
+      <i>menu</i>
     </button>
     <menu class="bottom transparent no-wrap left right-align">
       <li>

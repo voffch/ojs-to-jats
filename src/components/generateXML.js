@@ -95,7 +95,7 @@ export default function generateXML(jmeta, ameta) {
     }
     return false;
   }
-  if (atLeastOneAuthor) {
+  if (atLeastOneAuthor()) {
     let allAffiliations = [];
     const contribGroup = xml.createElementNS(ns, 'contrib-group');
     for (const author of ameta.authors) {

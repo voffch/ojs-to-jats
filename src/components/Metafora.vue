@@ -102,6 +102,7 @@ async function queryAPI(httpMethod, urlObject, body=null, takeForGranted=false) 
     if (body) {
       params.body = body;
     }
+    responseStatusCode.value = 0;
     const response = await fetch(urlObject, params);
     responseStatusCode.value = response.status;
     const contentType = response.headers.get('Content-Type');
@@ -340,7 +341,7 @@ const doiLookupButtonText = computed(() => {
   }
 });
 
-watch(props.doi, (newDoi, oldDoi) => {
+watch(() => props.doi, (newDoi, oldDoi) => {
   if (newDoi !== oldDoi) {
     metaforaStatus.value = genMetaforaStatus();
   }
