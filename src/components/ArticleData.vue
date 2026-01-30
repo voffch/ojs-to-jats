@@ -72,6 +72,12 @@ function removeNames(lang) {
   }
 }
 
+function removeEmails() {
+  for (const author of meta.value.authors) {
+    author.email = '';
+  }
+}
+
 const urlRegexp = 'https?\:\/\/.+';
 const dateRegexp = '\\d{4}-[01]\\d-[0-3]\\d';
 </script>
@@ -147,6 +153,7 @@ const dateRegexp = '\\d{4}-[01]\\d-[0-3]\\d';
     <div class="modify-content-buttons">
       <button class="border small-round vertical small-elevate primary-border primary-text" @click="() => removeNames('ru')">Убрать ФИО (РУС)</button>
       <button class="border small-round vertical small-elevate primary-border primary-text" @click="() => removeNames('en')">Убрать ФИО (ENG)</button>
+      <button class="border small-round vertical small-elevate primary-border primary-text" @click="removeEmails">Убрать email</button>
     </div>
 
     <h4 class="small">Публикационные данные</h4>
