@@ -60,7 +60,6 @@ function handleSelect(e) {
   <SelectInput 
     caption="Тип лицензии"
     :options="licenses"
-    :showOptions="showOptions"
     v-model="selectedLicense"
     @change="handleSelect" />
   <TextInput 

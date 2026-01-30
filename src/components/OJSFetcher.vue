@@ -1,30 +1,32 @@
 <script setup>
 import { ref, computed, watch } from 'vue';
-import ArticleWrapper from './ArticleWrapper.vue';
 import { genAuthorMeta, genJournalMeta, genArticleMeta } from "./metadataTemplates";
 
-const journalMeta = ref(genJournalMeta());
-const articleMeta = ref(genArticleMeta());
-
-const props = defineProps({
-  gs: {
-    type : Object,
-    required : true
-  },
-  submissionId: {
-    type : String,
-    default : 'default'
-  }
+const journalMeta = defineModel('journalMeta', {
+  type : Object,
+  required : true,
+  default : genJournalMeta()
 });
 
-const submissionId = ref('');
+const articleMeta = defineModel('articleMeta', {
+  type : Object,
+  required : true,
+  default : genArticleMeta()
+});
+
+const baseUrl = defineModel('baseUrl', {
+  type : String,
+  required : true
+});
+
+const submissionId = defineModel('submissionId', {
+  type : String,
+  required : true
+});
+
 const updateJournalMeta = ref(false);
 
-watch(() => props.submissionId, () => {
-  submissionId.value = props.submissionId;
-});
-
-watch(submissionId, (newNumber, oldNumber) => {
+watch(() => submissionId.value, (newNumber, oldNumber) => {
   if (newNumber !== oldNumber) {
     loadedOnce.value = false;
     editUrl.value = '';
@@ -52,7 +54,7 @@ function clearLog() {
 }
 
 const articleUrl = computed(() => {
-  return `${props.gs.baseUrl}article/view/${submissionId.value}`;
+  return `${baseUrl.value}article/view/${submissionId.value}`;
 });
 
 const editUrl = ref('');
@@ -74,7 +76,7 @@ async function requestHostPermissions(href) {
 function createUrlForLocaleChange(newLocale) {
   const locale = newLocale.includes('ru') ? 'ru_RU' : 'en_US';
   const articleUrlObject = new URL(articleUrl.value);
-  const url = new URL(`user/setLocale/${locale}`, props.gs.baseUrl);
+  const url = new URL(`user/setLocale/${locale}`, baseUrl.value);
   url.searchParams.append('source', articleUrlObject.pathname);
   return url.href;
 }
@@ -83,13 +85,15 @@ async function loadPublication() {
   const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
   loading.value = true;
   clearLog();  
-  if (props.gs.baseUrl.match(/^https?:\/\/.+$/) && submissionId.value.match(/^\d+$/)) {
-    const granted = await requestHostPermissions(props.gs.baseUrl);
+  if (baseUrl.value.match(/^https?:\/\/.+$/) && submissionId.value.match(/^\d+$/)) {
+    const granted = await requestHostPermissions(baseUrl.value);
     if (granted) {
       loadedOnce.value = true;
       editUrl.value = '';
-      articleMeta.value = genArticleMeta();
-      articleMeta.value.pageUrl = articleUrl.value;
+      articleMeta.value = {
+        ...genArticleMeta(),
+        pageUrl: articleUrl.value
+      };
       try {
         const firstStatus = await loadOjsWebpage();
         let apiAccessed = false;
@@ -116,7 +120,7 @@ async function loadPublication() {
         logInfo('Загрузка и обработка данных завершены');
       }
     } else {
-      logError(`Вы не разрешили плагину доступ к ${props.gs.baseUrl}`);
+      logError(`Вы не разрешили плагину доступ к ${baseUrl.value}`);
     }
   } else {
     logError('Недопустимое значение Base URL или Submission ID')
@@ -193,7 +197,7 @@ async function loadOjsWebpage(newLang=null) {
         logInfo(`Страница на OJS ${result.ojsVersion.toFixed(1)}: ${generator.content}`);
       } else {
         logWarning('Либо это OJS 2.x, либо это не страница со статьей на OJS');
-        editUrl.value = `${props.gs.baseUrl}editor/submission/${submissionId.value}`;
+        editUrl.value = `${baseUrl.value}editor/submission/${submissionId.value}`;
         result.ojsVersion = 2;
       }
       await parseOjsWebpage(html, result.ojsVersion);
@@ -736,7 +740,7 @@ async function loadByApi() {
   logInfo('Загрузка данных через OJS API...');
   try {
     const subEndpoint = `api/v1/submissions/${submissionId.value}`;
-    const subURL = new URL(subEndpoint, props.gs.baseUrl);
+    const subURL = new URL(subEndpoint, baseUrl.value);
     logInfo(`Запрос submission ${subURL.href}`);
     const subResponse = await fetch(subURL.href, {
       method: 'GET',
@@ -749,7 +753,7 @@ async function loadByApi() {
     const sub = await subResponse.json();
     editUrl.value = sub.urlWorkflow;
     const pubEndpoint = `${subEndpoint}/publications/${sub.currentPublicationId}`;
-    const pubURL = new URL(pubEndpoint, props.gs.baseUrl);
+    const pubURL = new URL(pubEndpoint, baseUrl.value);
     logInfo(`Запрос publication ${pubURL.href}`);
     const pubResponse = await fetch(pubURL.href, {
       method: 'GET',
@@ -768,7 +772,7 @@ async function loadByApi() {
     articleMeta.value.pageUrl = pub.urlPublished.replace(/\/version\/\d+/, '');
     if (pub?.galleys.length) {
       const galleyId = pub.galleys[0].id;
-      const guessedPdfUrl = new URL(`article/download/${sub.id}/${galleyId}`, props.gs.baseUrl);
+      const guessedPdfUrl = new URL(`article/download/${sub.id}/${galleyId}`, baseUrl.value);
       articleMeta.value.pdfUrl = guessedPdfUrl.href;
     }
     const rukey = Object.keys(pub.abstract).find(key => key.includes('ru'));
@@ -850,7 +854,11 @@ const loadButtonText = computed(() => {
 </script>
 
 <template>
-  <div class="load-controls-with-log-wrapper">
+  <section class="load-controls-with-log-wrapper">
+    <div class="base-url field label border small">
+      <input type="text" v-model.lazy.trim="baseUrl" id="base-url" pattern='https?:\/\/.+\/' />
+      <label for="base-url">Base URL журнала в OJS (должен заканчиваться на "/")</label>
+    </div>
     <div class="load-controls-wrapper">
       <div class="submission-id field label border small">
         <input type="text" id="article-number" placeholder="" pattern="\d+" v-model.trim="submissionId" />
@@ -878,14 +886,13 @@ const loadButtonText = computed(() => {
       <p v-if="loadLog.length === 0" class="log-info">Здесь будет лог загрузки</p>
       <p v-for="(msg, msgIndex) in loadLog" :key="msgIndex" :class="`log-${msg.type}`">&gt; {{ msg.text }}</p>
     </div>
-  </div>
-  <ArticleWrapper 
-    :gs="gs" 
-    v-model:journal-meta="journalMeta" 
-    v-model:article-meta="articleMeta" />
+  </section>
 </template>
 
 <style scoped>
+  .base-url {
+    margin-bottom: 1rem;
+  }
   .submission-id {
     width: fit-content;
   }

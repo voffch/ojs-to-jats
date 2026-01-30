@@ -1,5 +1,4 @@
 <script setup>
-import { ref } from 'vue';
 import BilingualTextInput from './controls/BilingualTextInput.vue';
 import TextInput from './controls/TextInput.vue';
 import SelectInput from './controls/SelectInput.vue';
@@ -8,11 +7,7 @@ import CheckboxInput from './controls/CheckboxInput.vue';
 import { genAuthorMeta, genArticleMeta } from './metadataTemplates';
 import AuthorData from './AuthorData.vue';
 import PdfPreview from './controls/PdfPreview.vue';
-
-const props = defineProps({
-  gs: Object,
-  required : true,
-});
+import { gs } from './store.js';
 
 const meta = defineModel({
   type : Object,
@@ -95,7 +90,6 @@ const dateRegexp = '\\d{4}-[01]\\d-[0-3]\\d';
         'correction'       : 'Сообщение о коррекции',
         'retraction'       : 'Сообщение о ретракции',
       }"
-      :showOptions="gs.show"
       v-model="meta.articleType" />
     <TextInput 
       caption="DOI" 
@@ -132,7 +126,7 @@ const dateRegexp = '\\d{4}-[01]\\d-[0-3]\\d';
     <h4 class="small">Авторы и аффилиации</h4>
     <template v-for="(author, authorIndex) in meta.authors" :key="authorIndex">
       <h5 class="small">{{ `Автор ${authorIndex + 1}` }}</h5>
-      <AuthorData :gs="gs" v-model="meta.authors[authorIndex]" />
+      <AuthorData v-model="meta.authors[authorIndex]" />
       <div class="author-management-buttons">
         <button class="border small-round small-elevate small primary-border primary-text" @click="() => addAuthor(authorIndex)">
           <i>add</i>
@@ -164,7 +158,7 @@ const dateRegexp = '\\d{4}-[01]\\d-[0-3]\\d';
     </div>
     <TextInput caption="Том" :showOptions="gs.show" v-model="meta.volume" />
     <TextInput caption="Номер" :showOptions="gs.show" v-model="meta.issue" />
-    <CheckboxInput caption="Использовать Elocation ID *" :showOptions="gs.show" v-model="meta.useElocationId" />
+    <CheckboxInput caption="Использовать Elocation ID *" v-model="meta.useElocationId" />
     <TextInput 
       :caption="meta.useElocationId ? 'Elocation ID *' : 'Страницы *'" 
       :hint="meta.useElocationId ? '' : 'только номера страниц через дефис'" 

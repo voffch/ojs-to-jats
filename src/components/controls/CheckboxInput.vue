@@ -8,12 +8,6 @@ const model = defineModel({
 });
 
 const props = defineProps({
-  showOptions : {
-    type : Object,
-    default : {
-      sideBySide : true
-    }
-  },
   caption : {
     type : String,
     required : true

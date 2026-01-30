@@ -3,10 +3,7 @@ import { onMounted, watchEffect } from 'vue';
 import BilingualTextInput from './controls/BilingualTextInput.vue';
 import TextInput from './controls/TextInput.vue';
 import { genJournalMeta } from './metadataTemplates.js'
-
-const props = defineProps({
-  gs: Object
-});
+import { gs } from './store.js';
 
 const meta = defineModel({
   type : Object,

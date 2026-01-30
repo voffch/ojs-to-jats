@@ -3,16 +3,12 @@ import { computed, watchEffect } from 'vue';
 import BilingualTextInput from './controls/BilingualTextInput.vue';
 import TextInput from './controls/TextInput.vue';
 import { genAuthorMeta } from './metadataTemplates';
+import { gs } from './store.js';
 
 const author = defineModel({
   type : Object,
   required : true,
   default : genAuthorMeta()
-});
-
-const props = defineProps({
-  gs: Object,
-  required : true,
 });
 
 watchEffect(() => {

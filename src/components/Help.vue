@@ -1,11 +1,24 @@
 <script setup>
 import { computed } from 'vue';
+import { environment } from './store.js';
 import markdownit from 'markdown-it';
 const md = markdownit();
-import HelpMarkdown from './Help.md?raw';
+import HelpFetcher from './HelpFetcher.md?raw';
+import HelpWebpage from './HelpWebpage.md?raw';
+import HelpMetafora from './HelpMetafora.md?raw';
 
-const renderedMarkdown = computed(() => {
-  return md.render(HelpMarkdown);
+const appVersion = __APP_VERSION__;
+
+const renderedHelpFetcher = computed(() => {
+  return md.render(HelpFetcher);
+});
+
+const renderedHelpWebpage = computed(() => {
+  return md.render(HelpWebpage);
+});
+
+const renderedHelpMetafora = computed(() => {
+  return md.render(HelpMetafora);
 });
 
 const opened = defineModel({
@@ -21,7 +34,7 @@ function close() {
 
 <template>
   <dialog class="max" :class="{ 'active' : opened }">
-    <div>
+    <div class="modal-wrapper">
       <div class="content">
         <nav class="right-align">
           <button @click="close">
@@ -29,7 +42,11 @@ function close() {
             <span>Закрыть</span>
           </button>
         </nav>
-        <div v-html="renderedMarkdown"></div>
+        <div v-if="environment.extension" v-html="renderedHelpFetcher"></div>
+        <div v-else>Вы используете это приложение в режиме веб-страницы. Расширенные возможности (загрузка информации из OJS и отправка в ИС Метафора по API) доступны только в режиме расширения браузера.</div>
+        <div v-html="renderedHelpWebpage"></div>
+        <div v-if="environment.extension" v-html="renderedHelpMetafora"></div>
+        <div>Версия приложения ({{ environment.extension ? 'расширение браузера' : 'веб-страница' }}): {{ appVersion }}</div>
       </div>
     </div>
   </dialog>

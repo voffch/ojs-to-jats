@@ -6,6 +6,7 @@ import HighlightedXML from './HighlightedXML.vue';
 import Metafora from './Metafora.vue';
 import { genJournalMeta, genArticleMeta } from "./metadataTemplates";
 import generateXML from "./generateXML.js";
+import { environment } from "./store.js";
 
 const journalMeta = defineModel('journalMeta', {
   type : Object,
@@ -19,11 +20,6 @@ const articleMeta = defineModel('articleMeta', {
   default : genArticleMeta()
 });
 
-const props = defineProps({
-  gs: Object,
-  required : true,
-});
-
 const xmlString = computed(() => {
   const xml = generateXML(journalMeta.value, articleMeta.value);
   if (xml) {
@@ -35,10 +31,10 @@ const xmlString = computed(() => {
 </script>
 
 <template>
-  <JournalData :gs="gs" v-model="journalMeta" />
-  <ArticleData :gs="gs" v-model="articleMeta" />
+  <JournalData v-model="journalMeta" />
+  <ArticleData v-model="articleMeta" />
   <HighlightedXML :xmlString="xmlString" />
-  <Metafora :xmlString="xmlString" :doi="articleMeta.doi" :pdfUrl="articleMeta.pdfUrl" />
+  <Metafora v-if="environment.extension" :xmlString="xmlString" :doi="articleMeta.doi" :pdfUrl="articleMeta.pdfUrl" />
 </template>
 
 <style scoped>

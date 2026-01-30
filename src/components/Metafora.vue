@@ -30,9 +30,9 @@ const props = defineProps({
 });
 
 onMounted(() => {
-  const storedAccessParameterString = localStorage.getItem('jats-maker-metafora-api-key');
-  if (storedAccessParameterString) {
-    metaforaApiKey.value = storedAccessParameterString;
+  const stored = localStorage.getItem('jats-maker-metafora-api-key');
+  if (stored) {
+    metaforaApiKey.value = stored;
   }
 });
 
@@ -278,12 +278,8 @@ async function postXMLandPDF() {
     if (!response.ok) {
         throw new Error(`Ошибка ${response.status} при загрузке PDF`);
     }
-    const contentType = response.headers.get("content-type");
-    if (!contentType || !contentType.includes("application/pdf")) {
-      throw new Error(`Ошибка - ответ в формате "${contentType}", а не application/pdf`);
-    }
     pdfBlob = await response.blob();
-    //pdfBlob = new Blob([pdfBlob], { type: 'application/pdf' }); - unnecessary, or else what am I checking the mime type for?
+    pdfBlob = new Blob([pdfBlob], { type: 'application/pdf' });
     const url = new URL(`https://metafora.rcsi.science/api/v2/files/jats/xml_pdf/`);
     const body = new FormData();
     const xmlBlob = new Blob([props.xmlString], { type: 'text/xml' });
@@ -408,7 +404,6 @@ watch(responseText, () => {
           <span>Загрузить XML и PDF</span>
         </button>
       </div>
-      <h3 class="small">Результат запроса к ИС Метафора</h3>
       <div class="status-wrapper">{{ responseExplained }}</div>
       <pre><code 
         class="language-json" 
