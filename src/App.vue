@@ -60,6 +60,46 @@ function scrollToBottom() {
 function openHelp() {
   helpOpened.value = true;
 }
+
+async function downloadJson() {
+  const json = {
+    journal: journalMeta.value,
+    article: articleMeta.value
+  };
+  const dataStr = JSON.stringify(json, null, 2);
+  const blob = new Blob([dataStr], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'journalArticle.json';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+const fileInput = ref(null);
+
+const uploadJson = () => {
+  fileInput.value.click();
+}
+
+const onFileSelected = (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const json = JSON.parse(e.target.result);
+      Object.assign(journalMeta.value, json.journal);
+      Object.assign(articleMeta.value, json.article);
+    } catch (error) {
+      console.error("Кривой JSON:", error);
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
 </script>
 
 <template>
@@ -90,7 +130,26 @@ function openHelp() {
           <span>Вниз</span>
         </button>
       </li>
+      <li class="top-margin">
+        <button class="fill" @click="downloadJson">
+          <i>download</i>
+          <span>В *.json</span>
+        </button>
+      </li>
       <li>
+        <button class="fill" @click="uploadJson">
+          <i>upload</i>
+          <span>Из *.json</span>
+        </button>
+        <input 
+          type="file" 
+          accept=".json" 
+          ref="fileInput" 
+          style="display: none" 
+          @change="onFileSelected" 
+        />
+      </li>
+      <li class="top-margin">
         <button class="fill" @click="openHelp">
           <i>help</i>
           <span>Справка</span>
@@ -106,7 +165,7 @@ function openHelp() {
     position: fixed;
     top: 1rem;
     right: 1rem;
-    opacity: 0.7;
+    opacity: 0.75;
     z-index: 99;
   }
 </style>
