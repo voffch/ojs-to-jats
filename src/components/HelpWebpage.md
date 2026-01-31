@@ -1,3 +1,5 @@
-# webpage
+Это веб-приложение для подготовки JATS XML метаданных научных публикаций на основании текста, введенного в форму. Основная задача - генерировать валидные [JATS XML v. 1.4](https://jats.nlm.nih.gov/archiving/tag-library/1.4/), пригодные для загрузки в [ИС Метафора](https://metafora.rcsi.science/). Приложение написано для Firefox. Если вы пользуетесь другим, хромоногим браузером, пожалуйста, [установите нормальный браузер](https://www.firefox.com).
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+Вы запустили приложение в режиме веб-страницы. Расширенные возможности (загрузка информации из OJS и отправка в ИС Метафора по API) доступны только в режиме расширения браузера. Веб-страница генерирует такой же файл JATS XML, как и расширение, но заполнять форму можно только вручную.
+
+Порядок действий с веб-страницей такой: заполняете форму, проверяете правильность введенных данных, смотрите по диагонали сформированный под формой XML и скачиваете его по ссылке в самом низу страницы.

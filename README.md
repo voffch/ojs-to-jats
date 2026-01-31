@@ -2,6 +2,8 @@
 
 This is a browser extension for generating [JATS XML](https://en.wikipedia.org/wiki/Journal_Article_Tag_Suite) metadata descriptions for the articles published with [Open Journal Systems](https://docs.pkp.sfu.ca/learning-ojs/about-ojs/) (OJS). The resulting JATS can be submitted via API to the Russian [Metafora](https://metafora.rcsi.science/) database.
 
+The application will unlikely be of any use outside Russia, so the entire thing is in Russian.
+
 Why the browser extension and not a simple webpage? Because I wanted this app to run locally, without the backend server, in the client's browser (leveraging the data fetching and parsing capabilities available in modern web browsers), and because a simple web page running the client-side javascript cannot access arbitrary (OJS) webpages due to the cross-domain request restrictions (see, e.g., [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CORS)). Extensions are allowed to do that, and this extension explicitly asks the user permissions to access specific domains.
 
 ## How to build
@@ -16,7 +18,7 @@ The unpacked extension will be located in the `dist` folder.
 
 ### For Chrome-based browsers
 
-Try replacing the `"scripts": ["background.js"],` line with `"service_worker": "background.js",` in `manifest.json`. This hasn't been tested though.
+Install Firefox. Seriously. If you insist on using Chrome, try replacing the `"scripts": ["background.js"],` line with `"service_worker": "background.js",` in `manifest.json`. This hasn't been tested extensively though. You are on your own.
 
 ## About JATS
 
@@ -24,7 +26,7 @@ The detailed description of the Journal Article Tag Suite (JATS) v. 1.4 format c
 
 ## Getting the data from OJS
 
-This can be done in several ways:
+This can be done (and is done, by this extension) in several ways:
 
 ### Via the OJS API
 
@@ -38,7 +40,7 @@ Unfortunately, the descriptions of the journal, such as the journal name and ISS
 
 ### By parsing the webpage
 
-To get the multilingual data, at least two web page requests are required: the first one to fetch the data in the current language, and the second - to switch the language and fetch the new data. The third request serves to switch the website language back.
+To get the multilingual data, at least two web page requests are required: the first one to fetch the data in the current language, and the second - to switch the language and fetch the new data. The third request serves to switch the website language back. The language-switching hacks don't currently work for OJS 3.5, because they ~~broke~~changed the routing in multilingual journals.
 
 #### From the metadata
 
