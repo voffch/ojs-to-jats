@@ -36,7 +36,6 @@ watch(xmlPretty, () => {
 
 <template>
   <section class="xml-wrapper">
-    <h2 class="small">XML</h2>
     <pre><code 
       class="language-xml" 
       data-prismjs-copy="Копировать"

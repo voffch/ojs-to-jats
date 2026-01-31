@@ -97,7 +97,7 @@ async function loadPublication() {
       try {
         const firstStatus = await loadOjsWebpage();
         let apiAccessed = false;
-        if (firstStatus.ojsVersion >= 3.1) {
+        if (firstStatus.ojsVersion >= 3.2) {
           try {
             await loadByApi();
             apiAccessed = true;

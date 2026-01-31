@@ -23,6 +23,8 @@ export default function generateXML(jmeta, ameta) {
 	const xml = createXmlWrapper(ameta.articleType);
   const a = xml.getElementsByTagName('article')[0];
 	const ns = a.namespaceURI;
+  const xmlns = 'http://www.w3.org/XML/1998/namespace'; // for xml:lang
+  const xlinkns = 'http://www.w3.org/1999/xlink';
   // journal-meta
   const journalMeta = xml.getElementsByTagNameNS(ns, 'journal-meta')[0];
   if (jmeta.titles.en || jmeta.titles.ru) {
@@ -30,7 +32,7 @@ export default function generateXML(jmeta, ameta) {
     for (const lang in jmeta.titles) {
       if (jmeta.titles[lang]) {
         const journalTitle = xml.createElementNS(ns, 'journal-title');
-        journalTitle.setAttribute('xml:lang', lang);
+        journalTitle.setAttributeNS(xmlns, 'lang', lang);
         journalTitle.textContent = jmeta.titles[lang];
         journalTitleGroup.appendChild(journalTitle);
       }
@@ -54,7 +56,7 @@ export default function generateXML(jmeta, ameta) {
     for (const lang in jmeta.publishers) {
       if (jmeta.publishers[lang]) {
         const publisherName = xml.createElementNS(ns, 'publisher-name');
-        publisherName.setAttribute('xml:lang', lang);
+        publisherName.setAttributeNS(xmlns, 'lang', lang);
         publisherName.textContent = jmeta.publishers[lang];
         publisher.appendChild(publisherName);
       }
@@ -78,7 +80,7 @@ export default function generateXML(jmeta, ameta) {
   for (const lang in ameta.titles) {
     if (ameta.titles[lang]) {
       const titleGroup = xml.createElementNS(ns, 'title-group');
-      titleGroup.setAttribute('xml:lang', lang);
+      titleGroup.setAttributeNS(xmlns, 'lang', lang);
       const articleTitle = xml.createElementNS(ns, 'article-title');
       // TODO html tags in title
       articleTitle.textContent = ameta.titles[lang];
@@ -114,7 +116,7 @@ export default function generateXML(jmeta, ameta) {
           for (const lang in author.surnames) {
             if (author.surnames[lang] || author.givennames[lang]) {
               const name = xml.createElementNS(ns, 'name');
-              name.setAttribute('xml:lang', lang);
+              name.setAttributeNS(xmlns, 'lang', lang);
               if (author.surnames[lang]) {
                 const surname = xml.createElementNS(ns, 'surname');
                 surname.textContent = author.surnames[lang];
@@ -136,8 +138,8 @@ export default function generateXML(jmeta, ameta) {
           contrib.appendChild(email);
         }
         if (author.affiliations.en || author.affiliations.ru) {
-          const authorAffsEn = author.affiliations.en.split(/;\s*/).filter(line => line.trim() !== "");
-          const authorAffsRu = author.affiliations.ru.split(/;\s*/).filter(line => line.trim() !== "");
+          const authorAffsEn = author.affiliations.en.trim().split(/\s*;\s*/).filter(line => line.trim() !== "");
+          const authorAffsRu = author.affiliations.ru.trim().split(/\s*;\s*/).filter(line => line.trim() !== "");
           const numberOfAffiliations = Math.max(authorAffsEn.length, authorAffsRu.length);
           for (let index = 0; index < numberOfAffiliations; index++) {
             const authorAff = {
@@ -171,7 +173,7 @@ export default function generateXML(jmeta, ameta) {
         if (affiliation[lang]) {
           const aff = xml.createElementNS(ns, 'aff');
           const institution = xml.createElementNS(ns, 'institution');
-          institution.setAttribute('xml:lang', lang);
+          institution.setAttributeNS(xmlns, 'lang', lang);
           institution.textContent = affiliation[lang];
           aff.appendChild(institution);
           affAlternatives.appendChild(aff);
@@ -237,7 +239,7 @@ export default function generateXML(jmeta, ameta) {
     for (const lang in ameta.copyrightHolders) {
       if (ameta.copyrightHolders[lang]) {
         const permissions = xml.createElementNS(ns, 'permissions');
-        permissions.setAttribute('xml:lang', lang);
+        permissions.setAttributeNS(xmlns, 'lang', lang);
         const copyrightStatement = xml.createElementNS(ns, 'copyright-statement');
         copyrightStatement.textContent = `Copyright © ${ameta.copyrightYear ? (ameta.copyrightYear + ' ') : ''}${ameta.copyrightHolders[lang]}`;
         permissions.appendChild(copyrightStatement);
@@ -257,7 +259,7 @@ export default function generateXML(jmeta, ameta) {
         if (ameta.licenseUrl.includes('creativecommons')) {
           license.setAttribute('license-type', 'open-access');
         }
-        license.setAttribute('xlink:href', ameta.licenseUrl);
+        license.setAttributeNS(xlinkns, 'href', ameta.licenseUrl);
         const licenseRef = xml.createElementNS('http://www.niso.org/schemas/ali/1.0/', 'license_ref');
         licenseRef.textContent = ameta.licenseUrl;
         license.appendChild(licenseRef);
@@ -269,15 +271,15 @@ export default function generateXML(jmeta, ameta) {
   if (ameta.pageUrl) {
     const selfUri = xml.createElementNS(ns, 'self-uri');
     selfUri.setAttribute('content-type', 'fulltext');
-    selfUri.setAttribute('xlink:title', 'article webpage');
-    selfUri.setAttribute('xlink:href', ameta.pageUrl);
+    selfUri.setAttributeNS(xlinkns, 'title', 'article webpage');
+    selfUri.setAttributeNS(xlinkns, 'href', ameta.pageUrl);
     selfUri.textContent = ameta.pageUrl;
     articleMeta.appendChild(selfUri);
   }
   for (const lang in ameta.abstracts) {
     if (ameta.abstracts[lang]) {
       const abstract = xml.createElementNS(ns, 'abstract');
-      abstract.setAttribute('xml:lang', lang);
+      abstract.setAttributeNS(xmlns, 'lang', lang);
       // ? how to work better with both html and non-html code
       // TODO html tags in abstract
       const p = xml.createElementNS(ns, 'p');
@@ -289,7 +291,7 @@ export default function generateXML(jmeta, ameta) {
   for (const lang in ameta.keywords) {
     if (ameta.keywords[lang]) {
       const kwdGroup = xml.createElementNS(ns, 'kwd-group');
-      kwdGroup.setAttribute('xml:lang', lang);
+      kwdGroup.setAttributeNS(xmlns, 'lang', lang);
       const splitKeywords = ameta.keywords[lang].split(/\s*;\s*/);
       for (const word of splitKeywords) {
         const kwd = xml.createElementNS(ns, 'kwd');
@@ -303,7 +305,7 @@ export default function generateXML(jmeta, ameta) {
   //for (const lang in ameta.fundings) {
   //  if (ameta.fundings[lang]) {
   //    const fundingGroup = xml.createElementNS(ns, 'funding-group');
-  //    fundingGroup.setAttribute('xml:lang', lang);
+  //    fundingGroup.setAttributeNS(xmlns, 'lang', lang);
   //    const fundingStatement = xml.createElementNS(ns, 'funding-statement');
   //    fundingStatement.textContent = ameta.fundings[lang];
   //    fundingGroup.appendChild(fundingStatement);
@@ -315,7 +317,7 @@ export default function generateXML(jmeta, ameta) {
     for (const lang in ameta.fundings) {
       if (ameta.fundings[lang]) {
         const fundingStatement = xml.createElementNS(ns, 'funding-statement');
-        fundingStatement.setAttribute('xml:lang', lang);
+        fundingStatement.setAttributeNS(xmlns, 'lang', lang);
         fundingStatement.textContent = ameta.fundings[lang];
         fundingGroup.appendChild(fundingStatement);
       }
@@ -327,7 +329,7 @@ export default function generateXML(jmeta, ameta) {
   for (const lang in ameta.acknowledgments) {
     if (ameta.acknowledgments[lang]) {
       const ack = xml.createElementNS(ns, 'ack');
-      ack.setAttribute('xml:lang', lang);
+      ack.setAttributeNS(xmlns, 'lang', lang);
       const p = xml.createElementNS(ns, 'p');
       p.textContent = ameta.acknowledgments[lang];
       ack.appendChild(p);
@@ -351,12 +353,12 @@ export default function generateXML(jmeta, ameta) {
       ref.appendChild(label);
       const citationAlternatives = xml.createElementNS(ns, 'citation-alternatives');
       const mixedCitation = xml.createElementNS(ns, 'mixed-citation');
-      mixedCitation.setAttribute('xml:lang', mostLinesLang);
+      mixedCitation.setAttributeNS(xmlns, 'lang', mostLinesLang);
       mixedCitation.textContent = line.replace(/(^\[?\d+[\.\)\:\]]?\s*)/i, ''); // removing numeration here
       citationAlternatives.appendChild(mixedCitation);
       if (index < lines[otherLang].length) {
         const mixedCitation = xml.createElementNS(ns, 'mixed-citation');
-        mixedCitation.setAttribute('xml:lang', otherLang);
+        mixedCitation.setAttributeNS(xmlns, 'lang', otherLang);
         mixedCitation.textContent = lines[otherLang][index];
         citationAlternatives.appendChild(mixedCitation);
       }
