@@ -29,12 +29,19 @@ function removeHtmlFromText(html) {
   return tempDiv.textContent;
 }
 
-function cleanHtmlTags() {
+function removeHtmlFromTitlesAbstracts() {
   for (const obj of [meta.value.titles, meta.value.abstracts]) {
     Object.keys(obj).forEach(key => {
       obj[key] = removeHtmlFromText(obj[key]);
     });
   }
+}
+
+function removeHtmlFromCitations() {
+  const obj = meta.value.citations;
+  Object.keys(obj).forEach(key => {
+    obj[key] = removeHtmlFromText(obj[key]);
+  });
 }
 
 function changeKeywordSeparators() {
@@ -123,7 +130,7 @@ const dateRegexp = '\\d{4}-[01]\\d-[0-3]\\d';
     <BilingualTextInput caption="Название публикации *" :showOptions="gs.show" v-model="meta.titles" />
     <BilingualTextInput caption="Аннотация" textarea :showOptions="gs.show" v-model="meta.abstracts" />
     <div class="modify-content-buttons">
-      <button class="border small-round vertical small-elevate primary-border primary-text" @click="() => cleanHtmlTags()">Убрать &lt;тэги&gt; из названия и аннотации</button>
+      <button class="border small-round vertical small-elevate primary-border primary-text" @click="removeHtmlFromTitlesAbstracts">Убрать &lt;тэги&gt; из названия и аннотации</button>
     </div>
     <BilingualTextInput caption="Ключевые слова" hint="перечислены через точку с запятой" :showOptions="gs.show" v-model="meta.keywords" />
     <div class="modify-content-buttons">
@@ -185,6 +192,9 @@ const dateRegexp = '\\d{4}-[01]\\d-[0-3]\\d';
 
     <h4 class="small">Библиография</h4>
     <BilingualTextInput caption="Список литературы" hint="одна строчка - один источник" textarea :showOptions="gs.show" v-model="meta.citations" />
+    <div class="modify-content-buttons">
+      <button class="border small-round vertical small-elevate primary-border primary-text" @click="removeHtmlFromCitations">Убрать &lt;тэги&gt; из библиографии</button>
+    </div>
 
   </section>
 </template>
