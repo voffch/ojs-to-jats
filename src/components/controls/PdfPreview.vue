@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 const props = defineProps({
   url : {
     type : String,
@@ -10,19 +10,25 @@ const props = defineProps({
 const error = ref(false);
 const errorMsg = 'Ошибка предпросмотра PDF-файла: некорректный или пустой URL';
 
+const firefox = ref(false);
+
 watch(() => props.url, (newValue) => {
   if (newValue) {
     error.value = false;
   }
-})
+});
 
 function handleError() {
   error.value = true;
 }
+
+onMounted(() => {
+  firefox.value = navigator.userAgent.toLowerCase().includes('firefox');
+})
 </script>
 
 <template>
-  <div class="pdf-preview-wrapper">
+  <div v-if="firefox" class="pdf-preview-wrapper">
     <span v-if="error">{{ errorMsg }}</span>
     <object v-else type="application/pdf" width="100%" height="300px" :data="url" @error="handleError">
       <p>{{ errorMsg }}</p>

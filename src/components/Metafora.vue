@@ -398,7 +398,7 @@ watch(responseText, () => {
           <span>Загрузить только XML</span>
         </button>
         <button class="border small-round small-elevate small primary-border primary-text" 
-                :disabled="loading || metaforaStatus.file_uid"
+                :disabled="loading || metaforaStatus.file_uid || !pdfUrl"
                 @click="postXMLandPDF">
           <i>picture_as_pdf</i>
           <span>Загрузить XML и PDF</span>
