@@ -54,8 +54,9 @@ function generateCopyrightHolders() {
 
 function correctDates() {
   function tryCorrectingDate(date) {
-    if (date.match(/^\d{2}\.\d{2}\.\d{4}$/)) {
-      return date.split('.').reverse().join('-');
+    const match = date?.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
+    if (match) {
+      return match.slice(1).map(x => x.length === 1 ? `0${x}` : x).reverse().join('-'); 
     } else {
       return date;
     }
