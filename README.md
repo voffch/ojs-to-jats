@@ -2,6 +2,8 @@
 
 This is a browser extension for generating [JATS XML](https://en.wikipedia.org/wiki/Journal_Article_Tag_Suite) metadata descriptions for the articles published with [Open Journal Systems](https://docs.pkp.sfu.ca/learning-ojs/about-ojs/) (OJS). The resulting JATS can be submitted via API to the Russian [Metafora](https://metafora.rcsi.science/) database.
 
+Multiple versions of OJS are currently supported, to some extent. Try trial-and-error to find out if this app works for you.
+
 The application will unlikely be of any use outside Russia, so the entire thing is in Russian.
 
 Why the browser extension and not a simple webpage? Because I wanted this app to run locally, without the backend server, in the client's browser (leveraging the data fetching and parsing capabilities available in modern web browsers), and because a simple web page running the client-side javascript cannot access arbitrary (OJS) webpages due to the cross-domain request restrictions (see, e.g., [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CORS)). Extensions are allowed to do that, and this extension explicitly asks the user permissions to access specific domains.
@@ -20,11 +22,26 @@ The unpacked extension will be located in the `dist` folder.
 
 Install Firefox. Seriously. If you insist on using Chrome, try replacing the `"scripts": ["background.js"],` line with `"service_worker": "background.js",` in `manifest.json`. This hasn't been tested extensively though. You are on your own.
 
+## How to use
+
+This extension works in a separate browser tab. To open it,
+
+- in your browser go to the article webpage in OJS (the webpage containing `article/view/` in URL, such as, e.g., [https://chimicatechnoacta.ru/article/view/9412](https://chimicatechnoacta.ru/article/view/9412)).
+- Click this extension's button among your browser extensions.
+- In the popup, allow access to the webpages under your OJS website domain.
+- A new tab should open. Click **Загрузить** to gather the metadata of the article.
+
+In the top right corner floats a menu button. You can get extended instructions there by clicking **Справка** (In Russian).
+
+## Your data
+
+stays in your browser. This extension requests explicit permission to access your OJS websites and Metafora API. Under the hood, it uses your credentials to access the OJS website (and OJS API, if available) strictly in order to fill in the forms. All requests to the OJS website are of the GET type, and the extension does not modify any data in your OJS website. Metafora API is used to modify, upload or delete the data in the Metafora database, but only on a per-article basis and if you choose to do so by clicking the respective buttons. The API key is stored in your browser's local storage.
+
 ## About JATS
 
 The detailed description of the Journal Article Tag Suite (JATS) v. 1.4 format can be found [here in the tag library](https://jats.nlm.nih.gov/archiving/tag-library/1.4/). To check the XML use the [XML validator](https://jats4r-validator.niso.org/) developed with JATS4R, which is the stricter subset of JATS, in mind.
 
-## Getting the data from OJS
+## Technical details: getting the data from OJS
 
 This can be done (and is done, by this extension) in several ways:
 
