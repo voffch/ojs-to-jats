@@ -218,22 +218,44 @@ export default function generateXML(jmeta, ameta) {
     articleMeta.appendChild(fpage);
     articleMeta.appendChild(lpage);
   }
-  // history is deprecated, should use pub-history, which metaphora doesn't understand
+  //history is deprecated, should use pub-history
+  //if (ameta.dateSubmitted || ameta.dateAccepted) {
+  //  const history = xml.createElementNS(ns, 'history');
+  //  if (ameta.dateSubmitted) {
+  //    const date = xml.createElementNS(ns, 'date');
+  //    date.setAttribute('date-type', 'received');
+  //    date.setAttribute('iso-8601-date', ameta.dateSubmitted);
+  //    history.appendChild(date);
+  //  }
+  //  if (ameta.dateAccepted) {
+  //    const date = xml.createElementNS(ns, 'date');
+  //    date.setAttribute('date-type', 'accepted');
+  //    date.setAttribute('iso-8601-date', ameta.dateAccepted);
+  //    history.appendChild(date);
+  //  }
+  //  articleMeta.appendChild(history);
+  //}
   if (ameta.dateSubmitted || ameta.dateAccepted) {
-    const history = xml.createElementNS(ns, 'history');
+    const pubHistory = xml.createElementNS(ns, 'pub-history');
     if (ameta.dateSubmitted) {
+      const event = xml.createElementNS(ns, 'event');
+      event.setAttribute('event-type', 'received');
       const date = xml.createElementNS(ns, 'date');
       date.setAttribute('date-type', 'received');
       date.setAttribute('iso-8601-date', ameta.dateSubmitted);
-      history.appendChild(date);
+      event.appendChild(date);
+      pubHistory.appendChild(event);
     }
     if (ameta.dateAccepted) {
+      const event = xml.createElementNS(ns, 'event');
+      event.setAttribute('event-type', 'accepted');
       const date = xml.createElementNS(ns, 'date');
       date.setAttribute('date-type', 'accepted');
       date.setAttribute('iso-8601-date', ameta.dateAccepted);
-      history.appendChild(date);
+      event.appendChild(date);
+      pubHistory.appendChild(event);
     }
-    articleMeta.appendChild(history);
+    articleMeta.appendChild(pubHistory);
   }
   if (ameta.licenseUrl) {
     for (const lang in ameta.copyrightHolders) {
