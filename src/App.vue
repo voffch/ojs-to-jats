@@ -103,12 +103,12 @@ const onFileSelected = (e) => {
 </script>
 
 <template>
-  <GlobalSettings />
   <OJSFetcher v-if="environment.extension" 
     v-model:baseUrl="baseUrl"
     v-model:submissionId="submissionId"
     v-model:journalMeta="journalMeta" 
     v-model:articleMeta="articleMeta" />
+  <GlobalSettings />
   <ArticleWrapper 
     v-model:journalMeta="journalMeta" 
     v-model:articleMeta="articleMeta" />
