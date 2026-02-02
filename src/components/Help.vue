@@ -47,11 +47,11 @@ function close() {
             <span>Закрыть</span>
           </button>
         </nav>
-        <div v-if="!environment.extension" v-html="renderedHelpFetcher"></div>
+        <div v-if="environment.extension" v-html="renderedHelpFetcher"></div>
         <div v-else v-html="renderedHelpWebpage"></div>
         <div v-html="renderedHelpForm"></div>
-        <div v-if="!environment.extension" v-html="renderedHelpMetafora"></div>
-        <div class="tertiary-text">Версия приложения ({{ !environment.extension ? 'расширение браузера' : 'веб-страница' }}): {{ appVersion }}</div>
+        <div v-if="environment.extension" v-html="renderedHelpMetafora"></div>
+        <div class="tertiary-text">Версия приложения ({{ environment.extension ? 'расширение браузера' : 'веб-страница' }}): {{ appVersion }}</div>
       </div>
     </div>
   </dialog>

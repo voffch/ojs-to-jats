@@ -1,5 +1,5 @@
 <script setup>
-import { useId, computed, watch } from 'vue';
+import { useId, computed, watch, ref } from 'vue';
 
 const model = defineModel({
   type: Object,
@@ -37,6 +37,13 @@ watch(model, () => {
   for (const lang in model.value) {
     model.value[lang] = model.value[lang].trim();
   }
+  // dirty hack for dirty chromium
+  if (textarea_ru.value) {
+    textarea_ru.value.dispatchEvent(new Event('focus'));
+  }
+  if (textarea_en.value) {
+    textarea_en.value.dispatchEvent(new Event('focus'));
+  }
 });
 
 const unique_key = useId();
@@ -50,19 +57,22 @@ function countLines(text) {
 
 const linesMessageRu = computed(() => countLines(model.value.ru));
 const linesMessageEn = computed(() => countLines(model.value.en));
+
+const textarea_ru = ref(null);
+const textarea_en = ref(null);
 </script>
 
 <template>
   <div class="input-group" :class="{ 'show-ru' : showOptions.ru, 'show-en' : showOptions.en, 'grid' : showOptions.sideBySide }">
     <div class="ru-wrapper field label small border" :class="{ 's6' : (showOptions.sideBySide && showOptions.en), 's12' : !showOptions.en }">
-      <textarea v-if="textarea" :id="`ru-${unique_key}`" v-model.lazy.trim="model.ru"></textarea>
+      <textarea v-if="textarea" :id="`ru-${unique_key}`" v-model.lazy.trim="model.ru" ref="textarea_ru"></textarea>
       <input v-else type="text" :id="`ru-${unique_key}`" v-model.lazy.trim="model.ru" />
       <label :for="`ru-${unique_key}`">{{ `${caption} (РУС)` }}</label>
       <output v-if="textarea" class="lines-message">{{ linesMessageRu }}</output>
       <output v-if="hint">{{ hint }}</output>
     </div>
     <div class="en-wrapper field label small border" :class="{ 's6' : (showOptions.sideBySide && showOptions.ru), 's12' : !showOptions.ru }">
-      <textarea v-if="textarea" :id="`en-${unique_key}`" v-model.lazy.trim="model.en"></textarea>
+      <textarea v-if="textarea" :id="`en-${unique_key}`" v-model.lazy.trim="model.en" ref="textarea_en"></textarea>
       <input v-else type="text" :id="`en-${unique_key}`" v-model.lazy.trim="model.en" />
       <label :for="`en-${unique_key}`">{{ `${caption} (ENG)` }}</label>
       <output v-if="textarea" class="lines-message">{{ linesMessageEn }}</output>

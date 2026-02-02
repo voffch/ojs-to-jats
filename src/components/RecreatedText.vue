@@ -59,7 +59,7 @@ const affiliations = computed(() => {
         <span v-for="(a, index) in authors.ru" :key="index">
           <span>{{ a.fullnames.ru }}</span>
           <span v-if="a.affNumbers.length"> <sup>{{ a.affNumbers.join(', ') }}</sup></span>
-          <span v-if="index + 1 < authors.en.length">, </span>
+          <span v-if="index + 1 < authors.ru.length">, </span>
         </span>
       </div>
       <div v-else>Нет авторов с русскоязычными именами</div>

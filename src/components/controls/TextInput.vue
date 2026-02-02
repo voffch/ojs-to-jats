@@ -1,5 +1,5 @@
 <script setup>
-import { useId, watch } from 'vue';
+import { useId, watch, ref } from 'vue';
 
 const emit =  defineEmits(['change']);
 
@@ -40,14 +40,19 @@ const props = defineProps({
 
 watch(model, () => {
   emit('change');
+  if (textarea.value) {
+    textarea.value.dispatchEvent(new Event('focus'));
+  }
 });
 
 const unique_key = useId();
+
+const textarea = ref(null);
 </script>
 
 <template>
   <div class="field label small border">
-    <textarea v-if="textarea" :id="unique_key" v-model.lazy.trim="model"></textarea>
+    <textarea v-if="textarea" :id="unique_key" v-model.lazy.trim="model" ref="textarea"></textarea>
     <input v-else type="text" :pattern="pattern" :id="unique_key" v-model.lazy.trim="model" />
     <label :for="unique_key">{{ caption }}</label>
     <output v-if="hint">{{ hint }}</output>
