@@ -28,18 +28,25 @@ const authors = computed(() => {
       const rid = xref.getAttribute('rid');
       return rid.match(/\d+/);
     });
+    let fullname_en = getFullname('en');
+    let fullname_ru = getFullname('ru');
+    if (fullname_en && !fullname_ru) {
+      fullname_ru = fullname_en;
+    } else if (!fullname_en && fullname_ru) {
+      fullname_en = fullname_ru;
+    } else if (!fullname_en && !fullname_ru) {
+      fullname_en = 'NAMELESS AUTHOR';
+      fullname_ru = 'АВТОР БЕЗ ИМЕНИ';
+    }
     return {
       fullnames: {
-        en: getFullname('en'),
-        ru: getFullname('ru')
+        en: fullname_en,
+        ru: fullname_ru
       },
       affNumbers: affNumbers
     };
   });
-  return {
-    en: result.filter(a => a.fullnames.en),
-    ru: result.filter(a => a.fullnames.ru),
-  }
+  return result;
 });
 
 const affiliations = computed(() => {
@@ -55,14 +62,14 @@ const affiliations = computed(() => {
   <section class="recreated-text-wrapper">
     <article>
       <div>По-русски:</div>
-      <div v-if="authors?.ru.length">
-        <span v-for="(a, index) in authors.ru" :key="index">
+      <div v-if="authors.length">
+        <span v-for="(a, index) in authors" :key="index">
           <span>{{ a.fullnames.ru }}</span>
           <span v-if="a.affNumbers.length"> <sup>{{ a.affNumbers.join(', ') }}</sup></span>
-          <span v-if="index + 1 < authors.ru.length">, </span>
+          <span v-if="index + 1 < authors.length">, </span>
         </span>
       </div>
-      <div v-else>Нет авторов с русскоязычными именами</div>
+      <div v-else>Нет авторов</div>
       <div v-if="affiliations?.ru.length">
         <ol>
           <li v-for="(aff, index) in affiliations.ru" :key="index">{{ aff }}</li>
@@ -72,14 +79,14 @@ const affiliations = computed(() => {
     </article>
     <article>
       <div>In English:</div>
-      <div v-if="authors?.en.length">
-        <span v-for="(a, index) in authors.en" :key="index">
+      <div v-if="authors.length">
+        <span v-for="(a, index) in authors" :key="index">
           <span>{{ a.fullnames.en }}</span>
           <span v-if="a.affNumbers.length"> <sup>{{ a.affNumbers.join(', ') }}</sup></span>
-          <span v-if="index + 1 < authors.en.length">, </span>
+          <span v-if="index + 1 < authors.length">, </span>
         </span>
       </div>
-      <div v-else>No authors with names in English</div>
+      <div v-else>No authors</div>
       <div v-if="affiliations?.en.length">
         <ol>
           <li v-for="(aff, index) in affiliations.en" :key="index">{{ aff }}</li>

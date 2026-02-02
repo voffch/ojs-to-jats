@@ -51,9 +51,15 @@ function changeKeywordSeparators() {
 }
 
 function generateCopyrightHolders() {
+  const hasNameInLang = (author, lang) => (author.surnames[lang] || author.givennames[lang]);
+  const someRussian = meta.value.authors.some(a => hasNameInLang(a, 'ru'));
+  const someEnglish = meta.value.authors.some(a => hasNameInLang(a, 'en'));
+  const bilingualAuthors = someRussian && someEnglish;
   for (const lang in meta.value.copyrightHolders) {
+    const otherLang = (lang === 'en') ? 'ru' : 'en';
     const fullnames = meta.value.authors.map(a => {
-      return `${a.givennames[lang]} ${a.surnames[lang]}`.trim();
+      const usedLang = (bilingualAuthors && !hasNameInLang(a, lang)) ? otherLang : lang;
+      return `${a.givennames[usedLang]} ${a.surnames[usedLang]}`.trim();
     }).filter(Boolean);
     meta.value.copyrightHolders[lang] = fullnames.join(', ').trim();
   }
