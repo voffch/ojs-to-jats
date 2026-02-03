@@ -60,20 +60,28 @@ const linesMessageEn = computed(() => countLines(model.value.en));
 
 const textarea_ru = ref(null);
 const textarea_en = ref(null);
+
+const handleDrop = (lang, e) => {
+  // a hack to return the drop-into-textarea
+  // functionality for textareas and inputs styled with beer.css
+  setTimeout(() => {
+    model.value[lang] = e.target.value;
+  }, 0);
+};
 </script>
 
 <template>
   <div class="input-group" :class="{ 'show-ru' : showOptions.ru, 'show-en' : showOptions.en, 'grid' : showOptions.sideBySide }">
     <div class="ru-wrapper field label small border" :class="{ 's6' : (showOptions.sideBySide && showOptions.en), 's12' : !showOptions.en }">
-      <textarea v-if="textarea" :id="`ru-${unique_key}`" v-model.lazy.trim="model.ru" ref="textarea_ru"></textarea>
-      <input v-else type="text" :id="`ru-${unique_key}`" v-model.lazy.trim="model.ru" />
+      <textarea v-if="textarea" :id="`ru-${unique_key}`" v-model.lazy.trim="model.ru" ref="textarea_ru" @drop="(e) => handleDrop('ru', e)"></textarea>
+      <input v-else type="text" :id="`ru-${unique_key}`" v-model.lazy.trim="model.ru" @drop="(e) => handleDrop('ru', e)" />
       <label :for="`ru-${unique_key}`">{{ `${caption} (РУС)` }}</label>
       <output v-if="textarea" class="lines-message">{{ linesMessageRu }}</output>
       <output v-if="hint">{{ hint }}</output>
     </div>
     <div class="en-wrapper field label small border" :class="{ 's6' : (showOptions.sideBySide && showOptions.ru), 's12' : !showOptions.ru }">
-      <textarea v-if="textarea" :id="`en-${unique_key}`" v-model.lazy.trim="model.en" ref="textarea_en"></textarea>
-      <input v-else type="text" :id="`en-${unique_key}`" v-model.lazy.trim="model.en" />
+      <textarea v-if="textarea" :id="`en-${unique_key}`" v-model.lazy.trim="model.en" ref="textarea_en" @drop="(e) => handleDrop('en', e)"></textarea>
+      <input v-else type="text" :id="`en-${unique_key}`" v-model.lazy.trim="model.en" @drop="(e) => handleDrop('en', e)" />
       <label :for="`en-${unique_key}`">{{ `${caption} (ENG)` }}</label>
       <output v-if="textarea" class="lines-message">{{ linesMessageEn }}</output>
       <output v-if="hint">{{ hint }}</output>
