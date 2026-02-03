@@ -899,6 +899,7 @@ const loadButtonText = computed(() => {
   .load-controls-wrapper {
     display: flex;
     gap: 1rem;
+    align-items: center;
   }
   .switch-wrapper {
     display: flex;

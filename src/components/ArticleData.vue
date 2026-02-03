@@ -6,7 +6,6 @@ import SelectLicense from './controls/SelectLicense.vue';
 import CheckboxInput from './controls/CheckboxInput.vue';
 import { genAuthorMeta, genArticleMeta } from './metadataTemplates';
 import AuthorData from './AuthorData.vue';
-import PdfPreview from './controls/PdfPreview.vue';
 import { gs } from './store.js';
 
 const meta = defineModel({
@@ -92,8 +91,9 @@ function removeEmails() {
   }
 }
 
-const urlRegexp = 'https?\:\/\/.+';
-const dateRegexp = '\\d{4}-[01]\\d-[0-3]\\d';
+const urlPattern = 'https?\:\/\/.+';
+const datePattern = '\\d{4}-[01]\\d-[0-3]\\d';
+const doiPattern = '10\\.\\d{4,9}\\/.+'; // oversimplified to avoid errors
 </script>
 
 <template>
@@ -114,25 +114,24 @@ const dateRegexp = '\\d{4}-[01]\\d-[0-3]\\d';
     <TextInput 
       caption="DOI" 
       hint="в поле вводится не гиперссылка, а просто номер DOI"
-      pattern="10\.\d{4,9}\/[\-\._;\(\)\/\:a-zA-Z0-9]+" 
+      :pattern="doiPattern" 
       :showOptions="gs.show" 
       v-model="meta.doi" 
       :url="`https://doi.org/${meta.doi}`" />
     <TextInput caption="EDN" hint="6 заглавных латинских букв" pattern="[A-Z]{6}" :showOptions="gs.show" v-model="meta.edn" />
     <TextInput 
       caption="URL страницы публикации на сайте журнала"
-      :pattern="urlRegexp"
+      :pattern="urlPattern"
       :showOptions="gs.show" 
       v-model="meta.pageUrl"
       :url="meta.pageUrl" />
     <TextInput 
       caption="URL PDF статьи"
       hint="ссылка на скачивание PDF-файла"
-      :pattern="urlRegexp"
+      :pattern="urlPattern"
       :showOptions="gs.show" 
       v-model="meta.pdfUrl"
       :url="meta.pdfUrl" />
-    <PdfPreview v-if="meta.pdfUrl" :url="meta.pdfUrl" />
     <BilingualTextInput caption="Название публикации *" :showOptions="gs.show" v-model="meta.titles" />
     <BilingualTextInput caption="Аннотация" textarea :showOptions="gs.show" v-model="meta.abstracts" />
     <div class="modify-content-buttons">
@@ -171,9 +170,9 @@ const dateRegexp = '\\d{4}-[01]\\d-[0-3]\\d';
     </div>
 
     <h4 class="small">Публикационные данные</h4>
-    <TextInput caption="Дата получения публикации" hint="в формате YYYY-MM-DD" :pattern="dateRegexp" :showOptions="gs.show" v-model="meta.dateSubmitted" />
-    <TextInput caption="Дата принятия публикации" hint="в формате YYYY-MM-DD" :pattern="dateRegexp" :showOptions="gs.show" v-model="meta.dateAccepted" />
-    <TextInput caption="Дата публикации *" hint="в формате YYYY-MM-DD" :pattern="dateRegexp" :showOptions="gs.show" v-model="meta.datePublished" />
+    <TextInput caption="Дата получения публикации" hint="в формате YYYY-MM-DD" :pattern="datePattern" :showOptions="gs.show" v-model="meta.dateSubmitted" />
+    <TextInput caption="Дата принятия публикации" hint="в формате YYYY-MM-DD" :pattern="datePattern" :showOptions="gs.show" v-model="meta.dateAccepted" />
+    <TextInput caption="Дата публикации *" hint="в формате YYYY-MM-DD" :pattern="datePattern" :showOptions="gs.show" v-model="meta.datePublished" />
     <div class="modify-content-buttons">
       <button class="border small-round vertical small-elevate primary-border primary-text" @click="correctDates">Переписать даты DD.MM.YYYY как YYYY-MM-DD</button>
     </div>
@@ -193,7 +192,7 @@ const dateRegexp = '\\d{4}-[01]\\d-[0-3]\\d';
     <div class="modify-content-buttons">
       <button class="border small-round vertical small-elevate primary-border primary-text" @click="generateCopyrightHolders">Заполнить авторами</button>
     </div>
-    <SelectLicense :showOptions="gs.show" v-model="meta.licenseUrl" :pattern="urlRegexp" />
+    <SelectLicense :showOptions="gs.show" v-model="meta.licenseUrl" :pattern="urlPattern" />
     <TextInput caption="Год фиксации" hint="в формате YYYY" pattern="\d{4}" :showOptions="gs.show" v-model="meta.copyrightYear" />
 
     <h4 class="small">Библиография</h4>
