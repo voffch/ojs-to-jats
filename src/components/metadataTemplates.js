@@ -19,6 +19,7 @@ export function genAuthorMeta() {
 
 export function genArticleMeta() {
   return {
+    primaryLanguage : '',
     articleType : 'research-article',
     doi : '',
     edn : '',

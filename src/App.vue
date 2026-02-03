@@ -91,8 +91,8 @@ const onFileSelected = (e) => {
   reader.onload = (e) => {
     try {
       const json = JSON.parse(e.target.result);
-      Object.assign(journalMeta.value, json.journal);
-      Object.assign(articleMeta.value, json.article);
+      Object.assign(journalMeta.value, {...genJournalMeta(), ...json.journal});
+      Object.assign(articleMeta.value, {...genArticleMeta(), ...json.article});
     } catch (error) {
       console.error("Кривой JSON:", error);
     }

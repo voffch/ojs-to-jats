@@ -101,6 +101,14 @@ const doiPattern = '10\\.\\d{4,9}\\/.+'; // oversimplified to avoid errors
 
     <h3 class="small">Статья</h3>
     <SelectInput 
+      caption="Основной язык"
+      :options="{
+        '' : '-- не задан --',
+        'en' : 'English',
+        'ru' : 'Русский',
+      }"
+      v-model="meta.primaryLanguage" />
+    <SelectInput 
       caption="Тип публикации *"
       :options="{
         'research-article' : 'Научная статья',

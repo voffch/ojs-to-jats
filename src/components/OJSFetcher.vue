@@ -388,6 +388,7 @@ function parseDublinCore(html, updateExisting=true) {
     setJournalMeta('eissn', 'DC.Source.ISSN');
   }
   const universalArticleMeta = {
+    'primaryLanguage' : 'DC.Language',
     'doi' : 'DC.Identifier.DOI',
     //'pageUrl' : 'DC.Identifier.URI',
     'issue' : 'DC.Source.Issue',
@@ -508,6 +509,7 @@ function parseHighwirePress(html, updateExisting=true) {
     setJournalMeta('eissn', 'citation_issn');
   }
   const universalArticleMeta = {
+    'primaryLanguage' : 'citation_language',
     'doi' : 'citation_doi',
     //'pageUrl' : 'citation_abstract_html_url',
     'pdfUrl' : 'citation_pdf_url',
@@ -764,6 +766,12 @@ async function loadByApi() {
     });
     checkResponse(pubResponse);
     const pub = await pubResponse.json();
+    const locale = pub.locale;
+    for (const lang of ['ru', 'en']) {
+      if (locale?.includes(lang)) {
+        articleMeta.value.primaryLanguage = lang;
+      }
+    }
     let doi = pub['pub-id::doi'];
     if (!doi) {
       doi = pub?.doiObject?.doi ?? ''; // OJS 3.5

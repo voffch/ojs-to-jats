@@ -1,26 +1,30 @@
 // https://jats4r.niso.org/
 // https://jats4r-validator.niso.org/
 // https://jats.nlm.nih.gov/archiving/tag-library/1.4/
+// https://jats.nlm.nih.gov/archiving/tag-library/1.4/chapter/tag-multi-lang-articles.html
+// ? @lang-variant @lang-source @lang-focus
 
 import { genAuthorMeta } from "./metadataTemplates";
 
-function createXmlWrapper(articleType) {
-	var parser = new DOMParser();
-	var xml  = parser.parseFromString(`<?xml version="1.0" encoding="UTF-8"?>
+function createXmlWrapper(articleType, lang) {
+	const parser = new DOMParser();
+  const langAttribute = lang ? `xml:lang="${lang}"` : '';
+	const xml  = parser.parseFromString(`<?xml version="1.0" encoding="UTF-8"?>
   <!DOCTYPE article PUBLIC "-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.4 20241031//EN" 
   "https://jats.nlm.nih.gov/archiving/1.4/JATS-archive-oasis-article1-4-mathml3.dtd">
   <article xmlns:ali="http://www.niso.org/schemas/ali/1.0/" 
   xmlns:mml="http://www.w3.org/1998/Math/MathML" 
   xmlns:xlink="http://www.w3.org/1999/xlink" 
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-  article-type="${articleType}"><front><journal-meta/><article-meta/></front><body/><back/></article>`, "application/xml");
+  article-type="${articleType}" 
+  ${langAttribute}><front><journal-meta/><article-meta/></front><body/><back/></article>`, "application/xml");
 	return xml;
 }
 
 export default function generateXML(jmeta, ameta) {
   //const jmeta = journalMeta;
   //const ameta = articleMeta;
-	const xml = createXmlWrapper(ameta.articleType);
+	const xml = createXmlWrapper(ameta.articleType, ameta.primaryLanguage);
   const a = xml.getElementsByTagName('article')[0];
 	const ns = a.namespaceURI;
   const xmlns = 'http://www.w3.org/XML/1998/namespace'; // for xml:lang
