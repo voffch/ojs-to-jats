@@ -52,6 +52,9 @@ watch(xmlPretty, () => {
   pre, pre code {
     white-space: pre-wrap;
   }
+  pre {
+    max-height: 800px;
+  }
   .links-wrapper {
     display: flex;
     justify-content: space-between;

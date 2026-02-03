@@ -35,7 +35,7 @@ const props = defineProps({
 
 watch(model, () => {
   for (const lang in model.value) {
-    model.value[lang] = model.value[lang].trim();
+    model.value[lang] && (model.value[lang] = model.value[lang]?.trim());
   }
   // dirty hack for dirty chromium
   if (textarea_ru.value) {

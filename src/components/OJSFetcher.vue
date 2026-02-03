@@ -833,7 +833,7 @@ async function loadByApi() {
       ru : pub.supportingAgencies[rukey] ? pub.supportingAgencies[rukey].join('; ') : '',
     };
     articleMeta.value.citations = {
-      en : pub.citationsRaw, // pub.citations.join('\n'),
+      en : pub.citationsRaw ?? '', // pub.citations.join('\n'),
       ru : ''
     };
   } catch(e) {
