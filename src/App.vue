@@ -6,6 +6,7 @@ import ArticleWrapper from "./components/ArticleWrapper.vue";
 import Help from "./components/Help.vue";
 import { environment } from './components/store.js';
 import { genJournalMeta, genArticleMeta } from "./components/metadataTemplates.js";
+import parseXML from './components/parseXML.js';
 
 const journalMeta = ref(genJournalMeta());
 const articleMeta = ref(genArticleMeta());
@@ -78,13 +79,13 @@ async function downloadJson() {
   URL.revokeObjectURL(url);
 }
 
-const fileInput = ref(null);
+const jsonFileInput = ref(null);
 
 const uploadJson = () => {
-  fileInput.value.click();
+  jsonFileInput.value.click();
 }
 
-const onFileSelected = (e) => {
+const onJsonFileSelected = (e) => {
   const file = e.target.files[0];
   if (!file) return;
   const reader = new FileReader();
@@ -95,6 +96,29 @@ const onFileSelected = (e) => {
       Object.assign(articleMeta.value, {...genArticleMeta(), ...json.article});
     } catch (error) {
       console.error("Кривой JSON:", error);
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+
+const xmlFileInput = ref(null);
+
+const uploadXml = () => {
+  xmlFileInput.value.click();
+}
+
+const onXmlFileSelected = (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const { journal, article } = parseXML(e.target.result);
+      Object.assign(journalMeta.value, {...genJournalMeta(), ...journal});
+      Object.assign(articleMeta.value, {...genArticleMeta(), ...article});
+    } catch (error) {
+      console.error("Кривой XML:", error);
     }
   };
   reader.readAsText(file);
@@ -131,6 +155,19 @@ const onFileSelected = (e) => {
         </button>
       </li>
       <li class="top-margin">
+        <button class="fill" @click="uploadXml">
+          <i>upload</i>
+          <span>Из JATS XML</span>
+        </button>
+        <input 
+          type="file" 
+          accept=".xml" 
+          ref="xmlFileInput" 
+          style="display: none" 
+          @change="onXmlFileSelected" 
+        />
+      </li>
+      <li class="top-margin">
         <button class="fill" @click="downloadJson">
           <i>download</i>
           <span>В *.json</span>
@@ -144,9 +181,9 @@ const onFileSelected = (e) => {
         <input 
           type="file" 
           accept=".json" 
-          ref="fileInput" 
+          ref="jsonFileInput" 
           style="display: none" 
-          @change="onFileSelected" 
+          @change="onJsonFileSelected" 
         />
       </li>
       <li class="top-margin">

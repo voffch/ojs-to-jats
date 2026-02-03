@@ -13,7 +13,8 @@ export function genAuthorMeta() {
     affiliations : {
       en : '',
       ru : ''
-    }
+    },
+    affNumbers : []
   };
 }
 
@@ -38,6 +39,10 @@ export function genArticleMeta() {
       ru : ''
     },
     authors : [],
+    affiliations : {
+      en : [],
+      ru : []
+    },
     copyrightHolders : {
       en : '',
       ru : ''
