@@ -13,8 +13,8 @@
 }
 
 body {
-    min-width: 750px;
-    overflow-x: scroll !important;
+  min-width: 750px;
+  overflow-x: scroll !important;
 }
 
 :root, body.light {
