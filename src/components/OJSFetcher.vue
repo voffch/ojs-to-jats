@@ -578,11 +578,11 @@ function parseOjs2Body(html, updateExisting=true) {
   //title abstract kwds doi refs copyright license (authors affs orcids)
   const lang = getHtmlLang(html);
   const title = html.querySelector('#articleTitle h3');
-  if (title && (updateExisting || !articleMeta.value.titles[lang])) {
+  if (title) {
     articleMeta.value.titles[lang] = title.innerHTML;
   }
   const abstract = html.querySelector('#articleAbstract > div');
-  if (abstract && (updateExisting || !articleMeta.value.abstracts[lang])) {
+  if (abstract) {
     articleMeta.value.abstracts[lang] = abstract.innerHTML;
   }
   const keywords = html.querySelector('#articleSubject > div');
@@ -648,11 +648,11 @@ function parseOjs3Body(html, updateExisting=true) {
   //all inside page_article
   const lang = getHtmlLang(html);
   const title = html.querySelector('.page_title');
-  if (title && (updateExisting || !articleMeta.value.titles[lang])) {
+  if (title) {
     articleMeta.value.titles[lang] = title.innerHTML.trim();
   }
   const abstract = html.querySelector('.item.abstract');
-  if (abstract && (updateExisting || !articleMeta.value.abstracts[lang])) {
+  if (abstract) {
     const abstractClone = abstract.cloneNode(true);
     const label = abstractClone.querySelector('.label');
     if (label) {
