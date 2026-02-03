@@ -27,17 +27,15 @@ export default function generateXML(jmeta, ameta) {
   const xlinkns = 'http://www.w3.org/1999/xlink';
   // journal-meta
   const journalMeta = xml.getElementsByTagNameNS(ns, 'journal-meta')[0];
-  if (jmeta.titles.en || jmeta.titles.ru) {
-    const journalTitleGroup = xml.createElementNS(ns, 'journal-title-group');
-    for (const lang in jmeta.titles) {
-      if (jmeta.titles[lang]) {
-        const journalTitle = xml.createElementNS(ns, 'journal-title');
-        journalTitle.setAttributeNS(xmlns, 'lang', lang);
-        journalTitle.textContent = jmeta.titles[lang];
-        journalTitleGroup.appendChild(journalTitle);
-      }
+  for (const lang in jmeta.titles) {
+    if (jmeta.titles[lang]) {
+      const journalTitleGroup = xml.createElementNS(ns, 'journal-title-group');
+      journalTitleGroup.setAttributeNS(xmlns, 'lang', lang);
+      const journalTitle = xml.createElementNS(ns, 'journal-title');
+      journalTitle.textContent = jmeta.titles[lang];
+      journalTitleGroup.appendChild(journalTitle);
+      journalMeta.appendChild(journalTitleGroup);
     }
-    journalMeta.appendChild(journalTitleGroup);
   }
   if (jmeta.issn) {
     const issn = xml.createElementNS(ns, 'issn');
@@ -218,45 +216,46 @@ export default function generateXML(jmeta, ameta) {
     articleMeta.appendChild(fpage);
     articleMeta.appendChild(lpage);
   }
-  //history is deprecated, should use pub-history
-  //if (ameta.dateSubmitted || ameta.dateAccepted) {
-  //  const history = xml.createElementNS(ns, 'history');
-  //  if (ameta.dateSubmitted) {
-  //    const date = xml.createElementNS(ns, 'date');
-  //    date.setAttribute('date-type', 'received');
-  //    date.setAttribute('iso-8601-date', ameta.dateSubmitted);
-  //    history.appendChild(date);
-  //  }
-  //  if (ameta.dateAccepted) {
-  //    const date = xml.createElementNS(ns, 'date');
-  //    date.setAttribute('date-type', 'accepted');
-  //    date.setAttribute('iso-8601-date', ameta.dateAccepted);
-  //    history.appendChild(date);
-  //  }
-  //  articleMeta.appendChild(history);
-  //}
+  //history is deprecated, but metafora doesn't parse pub-history
   if (ameta.dateSubmitted || ameta.dateAccepted) {
-    const pubHistory = xml.createElementNS(ns, 'pub-history');
+    const history = xml.createElementNS(ns, 'history');
     if (ameta.dateSubmitted) {
-      const event = xml.createElementNS(ns, 'event');
-      event.setAttribute('event-type', 'received');
       const date = xml.createElementNS(ns, 'date');
       date.setAttribute('date-type', 'received');
       date.setAttribute('iso-8601-date', ameta.dateSubmitted);
-      event.appendChild(date);
-      pubHistory.appendChild(event);
+      history.appendChild(date);
     }
     if (ameta.dateAccepted) {
-      const event = xml.createElementNS(ns, 'event');
-      event.setAttribute('event-type', 'accepted');
       const date = xml.createElementNS(ns, 'date');
       date.setAttribute('date-type', 'accepted');
       date.setAttribute('iso-8601-date', ameta.dateAccepted);
-      event.appendChild(date);
-      pubHistory.appendChild(event);
+      history.appendChild(date);
     }
-    articleMeta.appendChild(pubHistory);
+    articleMeta.appendChild(history);
   }
+  //pub-history
+  //if (ameta.dateSubmitted || ameta.dateAccepted) {
+  //  const pubHistory = xml.createElementNS(ns, 'pub-history');
+  //  if (ameta.dateSubmitted) {
+  //    const event = xml.createElementNS(ns, 'event');
+  //    event.setAttribute('event-type', 'received');
+  //    const date = xml.createElementNS(ns, 'date');
+  //    date.setAttribute('date-type', 'received');
+  //    date.setAttribute('iso-8601-date', ameta.dateSubmitted);
+  //    event.appendChild(date);
+  //    pubHistory.appendChild(event);
+  //  }
+  //  if (ameta.dateAccepted) {
+  //    const event = xml.createElementNS(ns, 'event');
+  //    event.setAttribute('event-type', 'accepted');
+  //    const date = xml.createElementNS(ns, 'date');
+  //    date.setAttribute('date-type', 'accepted');
+  //    date.setAttribute('iso-8601-date', ameta.dateAccepted);
+  //    event.appendChild(date);
+  //    pubHistory.appendChild(event);
+  //  }
+  //  articleMeta.appendChild(pubHistory);
+  //}
   //separate permissions elements
   //if (ameta.licenseUrl) {
   //  for (const lang in ameta.copyrightHolders) {
@@ -331,10 +330,20 @@ export default function generateXML(jmeta, ameta) {
   }
   if (ameta.pageUrl) {
     const selfUri = xml.createElementNS(ns, 'self-uri');
-    selfUri.setAttribute('content-type', 'fulltext');
+    selfUri.setAttribute('content-type', 'html');
+    selfUri.setAttribute('mimetype', 'text/html');
     selfUri.setAttributeNS(xlinkns, 'title', 'article webpage');
     selfUri.setAttributeNS(xlinkns, 'href', ameta.pageUrl);
     selfUri.textContent = ameta.pageUrl;
+    articleMeta.appendChild(selfUri);
+  }
+  if (ameta.pdfUrl) {
+    const selfUri = xml.createElementNS(ns, 'self-uri');
+    selfUri.setAttribute('content-type', 'pdf');
+    selfUri.setAttribute('mimetype', 'application/pdf');
+    selfUri.setAttributeNS(xlinkns, 'title', 'article pdf');
+    selfUri.setAttributeNS(xlinkns, 'href', ameta.pdfUrl);
+    selfUri.textContent = ameta.pdfUrl;
     articleMeta.appendChild(selfUri);
   }
   for (const lang in ameta.abstracts) {
