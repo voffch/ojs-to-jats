@@ -55,7 +55,11 @@ const responseExplained = ref('Здесь будет объяснение рез
 const responseStatusCode = ref(0);
 
 function explainResponse(msg) {
-  responseExplained.value = `${msg} (HTTP ${responseStatusCode.value}) [${props.doi}]`;
+  if (responseStatusCode.value !== 0) {
+    responseExplained.value = `${msg} (HTTP ${responseStatusCode.value}) [${props.doi}]`;
+  } else {
+    responseExplained.value = `${msg} [${props.doi}]`;
+  }
 }
 
 // because this in manifest.json
@@ -257,29 +261,40 @@ async function postXML() {
   explainResponse(`Результат загрузки XML: ${statuses[responseStatusCode.value] || ''}`);
 }
 
+const fileInput = ref(null);
+
 async function postXMLandPDF() {
   loading.value = true;
   let pdfBlob = null;
   try {
+    responseStatusCode.value = 0;
     if (!props.pdfUrl) {
-      throw new Error('Нет ссылки на PDF статьи');
-    }
-    const granted = await requestHostPermissions(props.pdfUrl);
-    if (!granted) {
-      throw new Error(`Вы не разрешили плагину доступ к ${metaforaHostPattern} или ${props.pdfUrl}`);
-    }
-    const response = await fetch(props.pdfUrl, {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/pdf'
+      pdfBlob = await getLocalPdfFile();
+      if (!pdfBlob) {
+        throw new Error(`Ошибка: не удалось открыть локальный PDF-файл`);
       }
-    });
-    responseStatusCode.value = response.status;
-    if (!response.ok) {
-        throw new Error(`Ошибка ${response.status} при загрузке PDF`);
+    } else {
+      const granted = await requestHostPermissions(props.pdfUrl);
+      if (!granted) {
+        throw new Error(`Вы не разрешили плагину доступ к ${metaforaHostPattern} или ${props.pdfUrl}`);
+      }
+      const response = await fetch(props.pdfUrl, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/pdf'
+        }
+      });
+      responseStatusCode.value = response.status;
+      if (response.ok) {
+        pdfBlob = await response.blob();
+        pdfBlob = new Blob([pdfBlob], { type: 'application/pdf' });
+      } else {
+        pdfBlob = await getLocalPdfFile();
+        if (!pdfBlob) {
+          throw new Error(`Ошибка ${response.status} при загрузке PDF, и не удалось открыть локальный файл`);
+        }
+      }
     }
-    pdfBlob = await response.blob();
-    pdfBlob = new Blob([pdfBlob], { type: 'application/pdf' });
     const url = new URL(`https://metafora.rcsi.science/api/v2/files/jats/xml_pdf/`);
     const body = new FormData();
     const xmlBlob = new Blob([props.xmlString], { type: 'text/xml' });
@@ -311,6 +326,23 @@ async function postXMLandPDF() {
     loading.value = false;
   }
 }
+
+async function getLocalPdfFile() {
+  return new Promise((resolve) => {
+    fileInput.value.onchange = (e) => {
+      const file = e.target.files[0];
+      let blob = null;
+      if (file) {
+        blob = new Blob([file], { type: file.type });
+      }
+      resolve(blob);
+    };
+    fileInput.value.oncancel = (e) => {
+      resolve(null);
+    };
+    fileInput.value.click();
+  });
+};
 
 const metaforaStatusExplained = computed(() => {
   const ms = metaforaStatus.value;
@@ -398,11 +430,17 @@ watch(responseText, () => {
           <span>Загрузить только XML</span>
         </button>
         <button class="border small-round small-elevate small primary-border primary-text" 
-                :disabled="loading || metaforaStatus.file_uid || !pdfUrl"
+                :disabled="loading || metaforaStatus.file_uid"
                 @click="postXMLandPDF">
           <i>picture_as_pdf</i>
           <span>Загрузить XML и PDF</span>
         </button>
+        <input 
+          type="file" 
+          accept=".pdf" 
+          ref="fileInput" 
+          style="display: none" 
+        />
       </div>
       <div class="status-wrapper">{{ responseExplained }}</div>
       <pre><code 
