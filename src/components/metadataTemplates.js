@@ -14,7 +14,7 @@ export function genAuthorMeta() {
       en : '',
       ru : ''
     },
-    affNumbers : []
+    affNumbers : [] // 1-indexed
   };
 }
 

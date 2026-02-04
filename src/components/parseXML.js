@@ -3,6 +3,10 @@ import { genJournalMeta, genArticleMeta, genAuthorMeta } from "./metadataTemplat
 export default function parseXML(xmlString) {
   const parser = new DOMParser();
   const xml = parser.parseFromString(xmlString, "application/xml");
+  return parseXMLDOM(xml);
+}
+
+export function parseXMLDOM(xml) {
   const getText = (selector, root=xml) => root.querySelector(selector)?.textContent.trim() ?? '';
   const getBilingualText = (selector, root=xml) => {
     return {
@@ -11,6 +15,10 @@ export default function parseXML(xmlString) {
     }
   };
   const getAttr = (selector, attribute) => xml.querySelector(selector)?.getAttribute(attribute) ?? '';
+  const getAttrNS = (selector, namespace, attribute) => {
+    return xml.querySelector(selector)?.getAttributeNS(namespace, attribute) ?? '';
+  };
+  const xlinkns = 'http://www.w3.org/1999/xlink';
   const getMultipleTexts = (selector, delimiter) => {
     const texts = Array.from(xml.querySelectorAll(selector)).map(e => e.textContent.trim());
     return texts.join(delimiter);
@@ -34,15 +42,15 @@ export default function parseXML(xmlString) {
     articleType : getAttr('article', 'article-type'),
     doi : getText('article-id[pub-id-type="doi"]'),
     edn : getText('article-id[pub-id-type="edn"]'),
-    pageUrl : getAttr('self-uri[content-type="html"]', 'xlink:href'),
-    pdfUrl : getAttr('self-uri[content-type="pdf"]', 'xlink:href'),
+    pageUrl : getAttrNS('self-uri[content-type="html"]', xlinkns, 'href'),
+    pdfUrl : getAttrNS('self-uri[content-type="pdf"]', xlinkns, 'href'),
     titles : getBilingualText('article-title'),
     abstracts : getBilingualText('abstract'),
     keywords : getMultipleBilingualTexts('kwd', '; '),
     // authors : [],
     // affiliations : [],
     copyrightHolders : getBilingualText('copyright-holder'),
-    licenseUrl : getAttr('license', 'xlink:href'),
+    licenseUrl : getAttrNS('license', xlinkns, 'href'),
     copyrightYear : getText('copyright-year'),
     dateSubmitted : getAttr('date[date-type="received"]', 'iso-8601-date'),
     dateAccepted : getAttr('date[date-type="accepted"]', 'iso-8601-date'),

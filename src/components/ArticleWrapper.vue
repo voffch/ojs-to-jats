@@ -31,7 +31,7 @@ const props = defineProps({
   }
 });
 
-const xmlTabActive = ref(true);
+const xmlTabActive = ref(false);
 </script>
 
 <template>
@@ -45,7 +45,7 @@ const xmlTabActive = ref(true);
       </a>
       <a :class="{ 'active' : !xmlTabActive }" @click="() => {xmlTabActive = false}">
         <i>article</i>
-        <span>Авторы и аффилиации</span>
+        <span>Метаданные</span>
       </a>
     </div>
     <div v-if="xmlTabActive" class="page padding" :class="{ 'active' : xmlTabActive }">
