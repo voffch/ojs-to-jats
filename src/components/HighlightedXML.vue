@@ -42,7 +42,6 @@ watch(xmlPretty, () => {
       data-prismjs-copy-error="Ошибка копирования"
       data-prismjs-copy-success="Скопировано!">{{ xmlPretty }}</code></pre>
     <div class="links-wrapper">
-      <a v-if="xmlString" class="link underline" :href="`data:text/xml,${encodeURIComponent(xmlString)}`" download="jats.xml">Скачать XML</a>
       <a class="link underline" href="https://jats4r-validator.niso.org/" target="_blank">https://jats4r-validator.niso.org/</a>
     </div>
   </section>
@@ -57,6 +56,6 @@ watch(xmlPretty, () => {
   }
   .links-wrapper {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
   }
 </style>

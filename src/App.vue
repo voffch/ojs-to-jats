@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import GlobalSettings from './components/Settings.vue';
 import OJSFetcher from "./components/OJSFetcher.vue";
 import ArticleWrapper from "./components/ArticleWrapper.vue";
@@ -7,9 +7,22 @@ import Help from "./components/Help.vue";
 import { environment } from './components/store.js';
 import { genJournalMeta, genArticleMeta } from "./components/metadataTemplates.js";
 import parseXML from './components/parseXML.js';
+import generateXML from "./components/generateXML.js";
 
 const journalMeta = ref(genJournalMeta());
 const articleMeta = ref(genArticleMeta());
+
+const xml = computed(() => {
+  return generateXML(journalMeta.value, articleMeta.value);
+});
+
+const xmlString = computed(() => {
+  if (xml.value) {
+    return new XMLSerializer().serializeToString(xml.value);
+  } else {
+    return null;
+  }
+});
 
 const callingUrl = ref('');
 const baseUrl = ref('');
@@ -62,46 +75,6 @@ function openHelp() {
   helpOpened.value = true;
 }
 
-async function downloadJson() {
-  const json = {
-    journal: journalMeta.value,
-    article: articleMeta.value
-  };
-  const dataStr = JSON.stringify(json, null, 2);
-  const blob = new Blob([dataStr], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = 'journalArticle.json';
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
-}
-
-const jsonFileInput = ref(null);
-
-const uploadJson = () => {
-  jsonFileInput.value.click();
-}
-
-const onJsonFileSelected = (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    try {
-      const json = JSON.parse(e.target.result);
-      Object.assign(journalMeta.value, {...genJournalMeta(), ...json.journal});
-      Object.assign(articleMeta.value, {...genArticleMeta(), ...json.article});
-    } catch (error) {
-      console.error("Кривой JSON:", error);
-    }
-  };
-  reader.readAsText(file);
-  e.target.value = '';
-}
-
 const xmlFileInput = ref(null);
 
 const uploadXml = () => {
@@ -124,6 +97,30 @@ const onXmlFileSelected = (e) => {
   reader.readAsText(file);
   e.target.value = '';
 }
+
+function makeXmlFilename() {
+  const parts = [
+    'JATS',
+    (journalMeta.value.eissn ? journalMeta.value.eissn : journalMeta.value.issn),
+    articleMeta.value.volume,
+    articleMeta.value.issue,
+    articleMeta.value.pages,
+    articleMeta.value.datePublished,
+  ];
+  return parts.filter(Boolean).join('_').replaceAll(/[<>:"\/\\\|\?\*]/g, '');
+}
+
+async function downloadXml() {
+  const blob = new Blob([xmlString.value], { type: 'text/xml' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = makeXmlFilename();
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
 </script>
 
 <template>
@@ -135,7 +132,9 @@ const onXmlFileSelected = (e) => {
   <GlobalSettings />
   <ArticleWrapper 
     v-model:journalMeta="journalMeta" 
-    v-model:articleMeta="articleMeta" />
+    v-model:articleMeta="articleMeta"
+    :xml="xml"
+    :xmlString="xmlString" />
 
   <div class="nav-menu">
     <button class="small circle">
@@ -167,24 +166,11 @@ const onXmlFileSelected = (e) => {
           @change="onXmlFileSelected" 
         />
       </li>
-      <li class="top-margin">
-        <button class="fill" @click="downloadJson">
-          <i>download</i>
-          <span>В *.json</span>
-        </button>
-      </li>
       <li>
-        <button class="fill" @click="uploadJson">
-          <i>upload</i>
-          <span>Из *.json</span>
+        <button class="fill" @click="downloadXml">
+          <i>download</i>
+          <span>В JATS XML</span>
         </button>
-        <input 
-          type="file" 
-          accept=".json" 
-          ref="jsonFileInput" 
-          style="display: none" 
-          @change="onJsonFileSelected" 
-        />
       </li>
       <li class="top-margin">
         <button class="fill" @click="openHelp">

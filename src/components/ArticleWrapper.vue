@@ -1,12 +1,11 @@
 <script setup>
-import { ref, computed } from "vue";
+import { ref } from "vue";
 import JournalData from "./JournalData.vue";
 import ArticleData from "./ArticleData.vue";
 import HighlightedXML from './HighlightedXML.vue';
 import RecreatedText from "./RecreatedText.vue";
 import Metafora from './Metafora.vue';
 import { genJournalMeta, genArticleMeta } from "./metadataTemplates";
-import generateXML from "./generateXML.js";
 import { environment } from "./store.js";
 
 const journalMeta = defineModel('journalMeta', {
@@ -21,15 +20,14 @@ const articleMeta = defineModel('articleMeta', {
   default : genArticleMeta()
 });
 
-const xml = computed(() => {
-  return generateXML(journalMeta.value, articleMeta.value);
-});
-
-const xmlString = computed(() => {
-  if (xml.value) {
-    return new XMLSerializer().serializeToString(xml.value);
-  } else {
-    return null;
+const props = defineProps({
+  xml: {
+    type: Object,
+    required: true
+  },
+  xmlString: {
+    type: String,
+    required: true
   }
 });
 
@@ -50,10 +48,10 @@ const xmlTabActive = ref(true);
         <span>Авторы и аффилиации</span>
       </a>
     </div>
-    <div class="page padding" :class="{ 'active' : xmlTabActive }">
+    <div v-if="xmlTabActive" class="page padding" :class="{ 'active' : xmlTabActive }">
       <HighlightedXML :xmlString="xmlString" />
     </div>
-    <div class="page padding" :class="{ 'active' : !xmlTabActive }">
+    <div v-else class="page padding" :class="{ 'active' : !xmlTabActive }">
       <RecreatedText :xml="xml" />
     </div>
   </div>
