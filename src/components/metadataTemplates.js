@@ -39,10 +39,7 @@ export function genArticleMeta() {
       ru : ''
     },
     authors : [],
-    affiliations : {
-      en : [],
-      ru : []
-    },
+    affiliations : [], // [{ en: '', ru: '' }]
     copyrightHolders : {
       en : '',
       ru : ''

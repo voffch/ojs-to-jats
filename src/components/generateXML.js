@@ -260,40 +260,6 @@ export default function generateXML(jmeta, ameta) {
   //  }
   //  articleMeta.appendChild(pubHistory);
   //}
-  //separate permissions elements
-  //if (ameta.licenseUrl) {
-  //  for (const lang in ameta.copyrightHolders) {
-  //    if (ameta.copyrightHolders[lang]) {
-  //      const permissions = xml.createElementNS(ns, 'permissions');
-  //      permissions.setAttributeNS(xmlns, 'lang', lang);
-  //      const copyrightStatement = xml.createElementNS(ns, 'copyright-statement');
-  //      copyrightStatement.textContent = `Copyright © ${ameta.copyrightYear ? (ameta.copyrightYear + ' ') : ''}${ameta.copyrightHolders[lang]}`;
-  //      permissions.appendChild(copyrightStatement);
-  //      if (ameta.copyrightYear) {
-  //        const copyrightYear = xml.createElementNS(ns, 'copyright-year');
-  //        copyrightYear.textContent = ameta.copyrightYear;
-  //        permissions.appendChild(copyrightYear);
-  //      }
-  //      const copyrightHolder = xml.createElementNS(ns, 'copyright-holder');
-  //      copyrightHolder.textContent = ameta.copyrightHolders[lang];
-  //      permissions.appendChild(copyrightHolder);
-  //      if (ameta.licenseUrl.includes('creativecommons')) {
-  //        const freeToRead = xml.createElementNS('http://www.niso.org/schemas/ali/1.0/', 'free_to_read');
-  //        permissions.appendChild(freeToRead);
-  //      }
-  //      const license = xml.createElementNS(ns, 'license');
-  //      if (ameta.licenseUrl.includes('creativecommons')) {
-  //        license.setAttribute('license-type', 'open-access');
-  //      }
-  //      license.setAttributeNS(xlinkns, 'href', ameta.licenseUrl);
-  //      const licenseRef = xml.createElementNS('http://www.niso.org/schemas/ali/1.0/', 'license_ref');
-  //      licenseRef.textContent = ameta.licenseUrl;
-  //      license.appendChild(licenseRef);
-  //      permissions.appendChild(license);
-  //      articleMeta.appendChild(permissions);
-  //    }
-  //  }
-  //}
   if (ameta.licenseUrl && (ameta.copyrightHolders.en || ameta.copyrightHolders.ru)) {
     const permissions = xml.createElementNS(ns, 'permissions');
     for (const lang in ameta.copyrightHolders) {
@@ -375,17 +341,6 @@ export default function generateXML(jmeta, ameta) {
       articleMeta.appendChild(kwdGroup);
     }
   }
-  //two separate funding-group
-  //for (const lang in ameta.fundings) {
-  //  if (ameta.fundings[lang]) {
-  //    const fundingGroup = xml.createElementNS(ns, 'funding-group');
-  //    fundingGroup.setAttributeNS(xmlns, 'lang', lang);
-  //    const fundingStatement = xml.createElementNS(ns, 'funding-statement');
-  //    fundingStatement.textContent = ameta.fundings[lang];
-  //    fundingGroup.appendChild(fundingStatement);
-  //    articleMeta.appendChild(fundingGroup);
-  //  }
-  //}
   if (ameta.fundings.en || ameta.fundings.ru) {
     const fundingGroup = xml.createElementNS(ns, 'funding-group');
     for (const lang in ameta.fundings) {

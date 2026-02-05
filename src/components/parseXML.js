@@ -78,11 +78,12 @@ export function parseXMLDOM(xml) {
     }
   }
   // authors and affs
-  const affiliations = { en: [], ru: []};
+  const affiliations = [];
   Array.from(xml.querySelectorAll('aff-alternatives')).forEach((aa) => {
-    for (const lang of ['en', 'ru']) {
-      affiliations[lang].push(aa.querySelector(`institution:lang(${lang})`)?.textContent.trim() ?? '');
-    }
+    affiliations.push({
+      en: aa.querySelector('institution:lang(en)')?.textContent.trim() ?? '',
+      ru: aa.querySelector('institution:lang(ru)')?.textContent.trim() ?? ''
+    });
   });
   ameta.affiliations = affiliations;
   const authors = Array.from(xml.querySelectorAll('contrib')).map((contrib) => {
@@ -92,8 +93,8 @@ export function parseXMLDOM(xml) {
     }).filter(x => !isNaN(x));
     function assignAffiliations(affNumbers, affiliations) {
       return {
-        en: affNumbers.map(i => affiliations.en[i - 1]).filter(Boolean).join('; '),
-        ru: affNumbers.map(i => affiliations.ru[i - 1]).filter(Boolean).join('; '),
+        en: affNumbers.map(i => affiliations[i - 1].en).filter(Boolean).join('; '),
+        ru: affNumbers.map(i => affiliations[i - 1].ru).filter(Boolean).join('; '),
       };
     }
     const author = {

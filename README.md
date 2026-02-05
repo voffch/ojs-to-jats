@@ -6,7 +6,11 @@ Multiple versions of OJS are currently supported, to some extent. Try trial-and-
 
 The application will unlikely be of any use outside Russia, so the entire thing is in Russian.
 
-Why the browser extension and not a simple webpage? Because I wanted this app to run locally, without the backend server, in the client's browser (leveraging the data fetching and parsing capabilities available in modern web browsers), and because a simple web page running the client-side javascript cannot access arbitrary (OJS) webpages due to the cross-domain request restrictions (see, e.g., [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CORS)). Extensions are allowed to do that, and this extension explicitly asks the user permissions to access specific domains.
+Why the browser extension and not a simple webpage? Because I wanted this app to run locally, without the backend server, in the client's browser (leveraging the data fetching and parsing capabilities available in modern web browsers), and because a simple web page running the client-side javascript cannot access arbitrary (OJS) webpages due to the cross-domain request restrictions (see, e.g., [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CORS)). Extensions are allowed to do that, and this extension asks the user permissions to access specific domains.
+
+## Technical disclaimer - permissions
+
+Ideally, this extension would've asked explicit user permission every time a new domain (e.g., new OJS website) is accessed. This feature is available under `"optional_host_permissions"` attribute of `manifest.json`. Unfortunately, I have to target also Firefox 115 ESR (the last version on Win 7) that doesn't support this attribute in Manifest V3. Therefore, I had to change the `"optional_host_permissions"` to just `"host_permissions"` for the time being. This setting may trigger automatic permission to access all domains without explicit user authorization (can be turned off manually in [about:addons](about:addons)).
 
 ## How to build
 
@@ -35,7 +39,7 @@ In the top right corner floats a menu button. You can get extended instructions 
 
 ## Your data
 
-stays in your browser. This extension requests explicit permission to access your OJS websites and Metafora API. Under the hood, it uses your credentials to access the OJS website (and OJS API, if available) strictly in order to fill in the forms. All requests to the OJS website are of the GET type, and the extension does not modify any data in your OJS website. Metafora API is used to modify, upload or delete the data in the Metafora database, but only on a per-article basis and if you choose to do so by clicking the respective buttons. The API key is stored in your browser's local storage.
+stays in your browser. This extension requests permission (see the disclaimer above) to access your OJS websites and Metafora API. Under the hood, it uses your credentials to access the OJS website (and OJS API, if available) strictly in order to fill in the forms. All requests to the OJS website are of the GET type, and the extension does not modify any data in your OJS website. Metafora API is used to modify, upload or delete the data in the Metafora database, but only on a per-article basis and if you choose to do so by clicking the respective buttons. The API key is stored in your browser's local storage.
 
 ## About JATS
 

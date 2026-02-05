@@ -38,8 +38,12 @@ function getFullnameWithFallback(author, lang) {
 
 function getAffiliationWithFallback(index, lang) {
   const otherLang = lang === 'ru' ? 'en' : 'ru';
-  return meta.value.affiliations[lang][index] || meta.value.affiliations[otherLang][index];
+  return meta.value.affiliations[index][lang] || meta.value.affiliations[index][otherLang];
 }
+
+const thereAreAuthors = (lang) => meta.value.authors.some(a => a.surnames[lang] || a.givennames[lang]);
+
+const thereAreAffiliations = (lang) => meta.value.affiliations.some(a => a[lang]);
 
 const tr = (lang, ru, en) => (lang === 'ru') ? ru : en;
 
@@ -95,7 +99,7 @@ const handleToggle = (lang, e) => {
       <div v-else class="warning">{{ tr(lang, 'нет ссылки на лицензию или правообладателей', 'no license URL or copyright holders') }}</div>
       <div v-if="meta.titles[lang]" class="title">{{ meta.titles[lang] }}</div>
       <div v-else class="warning">{{ tr(lang, 'нет заголовка', 'no title') }}</div>
-      <div v-if="meta.authors.length" class="authors">
+      <div v-if="thereAreAuthors(lang)" class="authors">
         <span v-for="(a, index) in meta.authors" :key="index" class="author">
           <span class="fullname">{{ getFullnameWithFallback(a, lang) }}</span>
           <sup v-if="a.affNumbers.length">{{ ' ' + a.affNumbers.join(', ') }}</sup>
@@ -105,9 +109,9 @@ const handleToggle = (lang, e) => {
         </span>
       </div>
       <div v-else class="warning">{{ tr(lang, 'нет авторов', 'no authors') }}</div>
-      <div v-if="meta.affiliations[lang].length" class="affiliations">
+      <div v-if="thereAreAffiliations(lang)" class="affiliations">
         <ol>
-          <li v-for="(aff, index) in meta.affiliations[lang]" :key="index">{{ getAffiliationWithFallback(index, lang) }}</li>
+          <li v-for="(aff, index) in meta.affiliations" :key="index">{{ getAffiliationWithFallback(index, lang) }}</li>
         </ol>
       </div>
       <div v-else class="warning">{{ tr(lang, 'нет аффилиация', 'no affiliations') }}</div>
