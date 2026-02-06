@@ -8,16 +8,25 @@ export default function parseXML(xmlString) {
 
 export function parseXMLDOM(xml) {
   const getText = (selector, root=xml) => root.querySelector(selector)?.textContent.trim() ?? '';
+  const translateSelector = (selector, lang) => `${selector}:lang(${lang})`; // e.g., `${selector}:lang(en)`
+  const translateMultipleSelectors = (selectors, lang) => {
+    if (Array.isArray(selectors)) {
+      return selectors.map(x => translateSelector(x, lang)).join(', ');
+    } else {
+      return translateSelector(selectors, lang);
+    }
+  };
   const getBilingualText = (selector, root=xml) => {
     return {
-      en: getText(`${selector}:lang(en)`, root),
-      ru: getText(`${selector}:lang(ru)`, root)
+      en: getText(translateMultipleSelectors(selector, 'en'), root),
+      ru: getText(translateMultipleSelectors(selector, 'ru'), root)
     }
   };
   const getAttr = (selector, attribute) => xml.querySelector(selector)?.getAttribute(attribute) ?? '';
   const getAttrNS = (selector, namespace, attribute) => {
     return xml.querySelector(selector)?.getAttributeNS(namespace, attribute) ?? '';
   };
+  const xmlns = 'http://www.w3.org/XML/1998/namespace'; // for xml:lang
   const xlinkns = 'http://www.w3.org/1999/xlink';
   const getMultipleTexts = (selector, delimiter) => {
     const texts = Array.from(xml.querySelectorAll(selector)).map(e => e.textContent.trim());
@@ -25,27 +34,27 @@ export function parseXMLDOM(xml) {
   };
   const getMultipleBilingualTexts = (selector, delimiter) => {
     return {
-      en: getMultipleTexts(`${selector}:lang(en)`, delimiter),
-      ru: getMultipleTexts(`${selector}:lang(ru)`, delimiter)
+      en: getMultipleTexts(translateMultipleSelectors(selector, 'en'), delimiter),
+      ru: getMultipleTexts(translateMultipleSelectors(selector, 'ru'), delimiter)
     }
   };
   const jmeta = {
     ...genJournalMeta(),
-    titles : getBilingualText('journal-title'),
+    titles : getBilingualText(['journal-title', 'journal-meta trans-title']),
     issn : getText('issn[publication-format="print"]'),
     eissn : getText('issn[publication-format="electronic"]'),
     publishers : getBilingualText('publisher-name')
   }
   const ameta = {
     ...genArticleMeta(),
-    primaryLanguage : getAttr('article', 'xml:lang'),
+    primaryLanguage : getAttrNS('article', xmlns, 'lang'),
     articleType : getAttr('article', 'article-type'),
     doi : getText('article-id[pub-id-type="doi"]'),
     edn : getText('article-id[pub-id-type="edn"]'),
     pageUrl : getAttrNS('self-uri[content-type="html"]', xlinkns, 'href'),
     pdfUrl : getAttrNS('self-uri[content-type="pdf"]', xlinkns, 'href'),
-    titles : getBilingualText('article-title'),
-    abstracts : getBilingualText('abstract'),
+    titles : getBilingualText(['article-title', 'article-meta trans-title']),
+    abstracts : getBilingualText(['abstract', 'trans-abstract']),
     keywords : getMultipleBilingualTexts('kwd', '; '),
     // nextAuthorId : 1,
     // authors : [],
@@ -94,8 +103,8 @@ export function parseXMLDOM(xml) {
     ameta.affiliations.push({
       id: id,
       val: {
-        en: aa.querySelector('institution:lang(en)')?.textContent.trim() ?? '',
-        ru: aa.querySelector('institution:lang(ru)')?.textContent.trim() ?? ''
+        en: aa.querySelector(translateSelector('institution', 'en'))?.textContent.trim() ?? '',
+        ru: aa.querySelector(translateSelector('institution', 'ru'))?.textContent.trim() ?? ''
       }
     });
   });
