@@ -69,6 +69,13 @@ const splitReferences = computed(() => {
   };
 });
 
+const numberOfKeywords = computed(() => {
+  return {
+    en: meta.value.keywords.en.split(';').length,
+    ru: meta.value.keywords.ru.split(';').length
+  }
+});
+
 const detailsCaptions = computed(() => {
   const suffixes = {
     en: ` References (${splitReferences.value.en.length}):`,
@@ -138,7 +145,7 @@ const handleToggle = (lang, e) => {
       </div>
       <div v-else class="warning">{{ tr(lang, 'нет аннотации', 'no abstract') }}</div>
       <div v-if="meta.keywords[lang]" class="keywords">
-        <span class="description">{{ tr(lang, 'Ключевые слова: ', 'Keywords: ') }}</span>
+        <span class="description">{{ tr(lang, `Ключевые слова (${numberOfKeywords[lang]}): `, `Keywords (${numberOfKeywords[lang]}): `) }}</span>
         {{ meta.keywords[lang] }}
       </div>
       <div v-else class="warning">{{ tr(lang, 'нет ключевых слов', 'no keywords') }}</div>
