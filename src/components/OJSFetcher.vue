@@ -1,6 +1,14 @@
 <script setup>
 import { ref, computed, watch } from 'vue';
-import { genAuthorMeta, genJournalMeta, genArticleMeta, addEmptyAuthor, addAuthor, processAffiliations } from "./metadataTemplates";
+import { 
+  genAuthorMeta, 
+  genJournalMeta, 
+  genArticleMeta, 
+  addEmptyAuthor, 
+  addAuthor, 
+  processAffiliations,
+  removeHtmlFromTitlesAbstracts, 
+  removeHtmlFromCitations } from "./metadataTemplates";
 
 const journalMeta = defineModel('journalMeta', {
   type : Object,
@@ -25,6 +33,7 @@ const submissionId = defineModel('submissionId', {
 });
 
 const updateJournalMeta = ref(false);
+const autoRemoveTags = ref(true);
 
 watch(() => submissionId.value, (newNumber, oldNumber) => {
   if (newNumber !== oldNumber) {
@@ -116,6 +125,10 @@ async function loadPublication() {
         }
         // final data sanitizing on success should go here
         processAffiliations(articleMeta.value);
+        if (autoRemoveTags.value) {
+          removeHtmlFromTitlesAbstracts(articleMeta.value);
+          removeHtmlFromCitations(articleMeta.value);
+        }
       } catch(e) {
         logError(e.message);
       } finally {
@@ -457,7 +470,7 @@ function parseDublinCore(html, updateExisting=true) {
     }
   }
   const citationAuthors = queryMetaAll('DC.Creator.PersonalName');
-  if (citationAuthors) {
+  if (citationAuthors.length) {
     const authorElements = Array.from(citationAuthors);
     initializeAuthorsIfEmpty(authorElements.length);
     for (const [index, author] of Object.entries(authorElements)) {
@@ -555,13 +568,13 @@ function parseHighwirePress(html, updateExisting=true) {
     }
   });
   const referenceElements = queryMetaAll('citation_reference');
-  if (referenceElements && (updateExisting || !articleMeta.value.citations.en)) {
+  if (referenceElements.length && (updateExisting || !articleMeta.value.citations.en)) {
     articleMeta.value.citations.en = Array.from(referenceElements).map(e => e.content).join('\n');
   }
   const citationAuthors = queryMetaAll('citation_author');
   const citationAuthorInstitutions = queryMetaAll('citation_author_institution');
-  if (citationAuthors && 
-      citationAuthorInstitutions && 
+  if (citationAuthors.length && 
+      citationAuthorInstitutions.length && 
       (citationAuthors.length === citationAuthorInstitutions.length)) {
     const authorElements = Array.from(citationAuthors);
     const institutionElements = Array.from(citationAuthorInstitutions);
@@ -611,7 +624,7 @@ function parseOjs2Body(html, updateExisting=true) {
     articleMeta.value.licenseUrl = license.href;
   }
   const citations = html.querySelectorAll('#articleCitations p');
-  if (citations && (updateExisting || !articleMeta.value.citations.en)) {
+  if (citations.length && (updateExisting || !articleMeta.value.citations.en)) {
     articleMeta.value.citations.en = Array.from(citations, (c) => c.textContent).join('\n');
   }
   const authorBios = Array.from(html.querySelectorAll('.authorBio'));
@@ -695,8 +708,11 @@ function parseOjs3Body(html, updateExisting=true) {
       articleMeta.value.copyrightYear = copyrightObject.year;
     }
   }
-  const citations = html.querySelectorAll('.item.references .value p');
-  if (citations && (updateExisting || !articleMeta.value.citations.en)) {
+  let citations = html.querySelectorAll('.item.references .value p');
+  if (!citations.length) {
+    citations = html.querySelectorAll('.item.references .value li'); // for customly hacked templates
+  }
+  if (citations.length && (updateExisting || !articleMeta.value.citations.en)) {
     articleMeta.value.citations.en = Array.from(citations, (c) => c.textContent).join('\n');
   }
   const authors = Array.from(html.querySelectorAll('.item.authors li'));
@@ -886,13 +902,19 @@ const loadButtonText = computed(() => {
         <i>arrow_circle_down</i>
         <span>{{ loadButtonText }}</span>
       </button>
-      <div class="switch-wrapper">
-        <label class="switch-label" for="update-journal-meta">При загрузке обновлять метаданные <strong>журнала</strong></label>
-        <label class="switch">
-          <input type="checkbox" id="update-journal-meta" v-model="updateJournalMeta" />
-          <span></span>
-        </label>
-      </div>
+      <fieldset class="load-controls-settings">
+        <legend>При загрузке</legend>
+        <nav>
+          <label class="checkbox" for="update-journal-meta">
+            <input type="checkbox" id="update-journal-meta" v-model="updateJournalMeta" />
+            <span>Обновлять Журнал</span>
+          </label>
+          <label class="checkbox" for="auto-clean-tags">
+            <input type="checkbox" id="auto-clean-tags" v-model="autoRemoveTags" />
+            <span>Чистить &lt;тэги&gt;</span>
+          </label>
+        </nav>
+      </fieldset>
     </div>
     <div>
       Страница статьи на сайте журнала: <a class="article-url link underline" :href="articleUrl" target="_blank">{{ articleUrl }}</a>
@@ -919,13 +941,12 @@ const loadButtonText = computed(() => {
     gap: 1rem;
     align-items: center;
   }
-  .switch-wrapper {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    text-align: right;
-    gap: 0.5rem;
-    margin: 0.5rem 0 0.5rem auto;
+  .load-controls-settings {
+    margin-block-start: 0 !important;
+    margin-left: auto;
+  }
+  .load-controls-settings nav {
+    flex-wrap: wrap;
   }
   .load-log {
     font-size: 0.8rem;

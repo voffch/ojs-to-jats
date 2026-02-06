@@ -4,7 +4,14 @@ import TextInput from './controls/TextInput.vue';
 import SelectInput from './controls/SelectInput.vue';
 import SelectLicense from './controls/SelectLicense.vue';
 import SwitchInput from './controls/SwitchInput.vue';
-import { genArticleMeta, addEmptyAffiliation, deleteAffiliation, addEmptyAuthor, deleteAuthor } from './metadataTemplates';
+import { 
+  genArticleMeta, 
+  addEmptyAffiliation, 
+  deleteAffiliation, 
+  addEmptyAuthor, 
+  deleteAuthor, 
+  removeHtmlFromTitlesAbstracts, 
+  removeHtmlFromCitations } from './metadataTemplates';
 import AuthorData from './AuthorData.vue';
 import { gs } from './store.js';
 
@@ -13,27 +20,6 @@ const meta = defineModel({
   required : true,
   default : genArticleMeta()
 });
-
-function removeHtmlFromText(html) {
-  let tempDiv = document.createElement('div');
-  tempDiv.innerHTML = html;
-  return tempDiv.textContent;
-}
-
-function removeHtmlFromTitlesAbstracts() {
-  for (const obj of [meta.value.titles, meta.value.abstracts]) {
-    Object.keys(obj).forEach(key => {
-      obj[key] = removeHtmlFromText(obj[key]);
-    });
-  }
-}
-
-function removeHtmlFromCitations() {
-  const obj = meta.value.citations;
-  Object.keys(obj).forEach(key => {
-    obj[key] = removeHtmlFromText(obj[key]);
-  });
-}
 
 function changeKeywordSeparators() {
   for (const lang in meta.value.keywords) {
@@ -135,7 +121,7 @@ const doiPattern = '10\\.\\d{4,9}\\/.+'; // oversimplified to avoid errors
     <BilingualTextInput caption="Название публикации *" :showOptions="gs.show" v-model="meta.titles" />
     <BilingualTextInput caption="Аннотация" textarea :showOptions="gs.show" v-model="meta.abstracts" />
     <div class="modify-content-buttons">
-      <button class="border small-round vertical small-elevate primary-border primary-text" @click="removeHtmlFromTitlesAbstracts">Убрать &lt;тэги&gt; из названия и аннотации</button>
+      <button class="border small-round vertical small-elevate primary-border primary-text" @click="removeHtmlFromTitlesAbstracts(meta)">Убрать &lt;тэги&gt; из названия и аннотации</button>
     </div>
     <BilingualTextInput caption="Ключевые слова" hint="перечислены через точку с запятой" :showOptions="gs.show" v-model="meta.keywords" />
     <div class="modify-content-buttons">
@@ -220,7 +206,7 @@ const doiPattern = '10\\.\\d{4,9}\\/.+'; // oversimplified to avoid errors
     <h4 class="small">Библиография</h4>
     <BilingualTextInput caption="Список литературы" hint="одна строчка - один источник" textarea :showOptions="gs.show" v-model="meta.citations" />
     <div class="modify-content-buttons">
-      <button class="border small-round vertical small-elevate primary-border primary-text" @click="removeHtmlFromCitations">Убрать &lt;тэги&gt; из библиографии</button>
+      <button class="border small-round vertical small-elevate primary-border primary-text" @click="removeHtmlFromCitations(meta)">Убрать &lt;тэги&gt; из библиографии</button>
     </div>
 
   </section>

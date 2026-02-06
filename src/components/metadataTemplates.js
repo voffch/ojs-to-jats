@@ -1,3 +1,5 @@
+// metadata templates (generators)
+
 export function genJournalMeta() {
   return {
     titles : {
@@ -94,6 +96,8 @@ export function addAuthor(articleMeta, authorMeta, index=null) {
   });
 }
 
+// helper functions
+
 export function addEmptyAuthor(articleMeta, index=null) {
   addAuthor(articleMeta, genAuthorMeta(), index);
 }
@@ -168,4 +172,25 @@ export function deaffiliateAuthorVal(authorVal, affId) {
   if (affIndex !== -1) {
     authorVal.affIds.splice(affIndex, 1);
   }
+}
+
+function removeHtmlFromText(html) {
+  let tempDiv = document.createElement('div');
+  tempDiv.innerHTML = html;
+  return tempDiv.textContent;
+}
+
+export function removeHtmlFromTitlesAbstracts(articleMeta) {
+  for (const obj of [articleMeta.titles, articleMeta.abstracts]) {
+    Object.keys(obj).forEach(key => {
+      obj[key] = removeHtmlFromText(obj[key]);
+    });
+  }
+}
+
+export function removeHtmlFromCitations(articleMeta) {
+  const obj = articleMeta.citations;
+  Object.keys(obj).forEach(key => {
+    obj[key] = removeHtmlFromText(obj[key]);
+  });
 }

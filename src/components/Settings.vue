@@ -19,16 +19,16 @@ function store() {
     <fieldset>
       <legend>Параметры отображения текстовых полей:</legend>
       <nav>
-        <label class="checkbox" :for="`article-show-ru`">
-          <input type="checkbox" :id="`article-show-ru`" v-model="gs.show.ru"  @change="store()" />
+        <label class="checkbox" for="article-show-ru">
+          <input type="checkbox" id="article-show-ru" v-model="gs.show.ru"  @change="store()" />
           <span>RUS</span>
         </label>
-        <label class="checkbox" :for="`article-show-en`">
-          <input type="checkbox" :id="`article-show-en`" v-model="gs.show.en"  @change="store()" />
+        <label class="checkbox" for="article-show-en">
+          <input type="checkbox" id="article-show-en" v-model="gs.show.en"  @change="store()" />
           <span>ENG</span>
         </label>
-        <label class="checkbox" :for="`article-side-by-side`">
-          <input type="checkbox" :id="`article-side-by-side`" v-model="gs.show.sideBySide"  @change="store()" />
+        <label class="checkbox" for="article-side-by-side">
+          <input type="checkbox" id="article-side-by-side" v-model="gs.show.sideBySide"  @change="store()" />
           <span>Горизонтально</span>
         </label>
       </nav>
