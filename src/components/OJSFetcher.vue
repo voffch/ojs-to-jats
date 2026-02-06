@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed, watch } from 'vue';
-import { genAuthorMeta, genJournalMeta, genArticleMeta } from "./metadataTemplates";
+import { genAuthorMeta, genJournalMeta, genArticleMeta, addEmptyAuthor, addAuthor, processAffiliations } from "./metadataTemplates";
 
 const journalMeta = defineModel('journalMeta', {
   type : Object,
@@ -114,6 +114,8 @@ async function loadPublication() {
             switchLanguageOnly(firstStatus.lang);
           }
         }
+        // final data sanitizing on success should go here
+        processAffiliations(articleMeta.value);
       } catch(e) {
         logError(e.message);
       } finally {
@@ -333,16 +335,21 @@ function splitFullName(fullname, firstNameFirst=true) {
 function initializeAuthorsIfEmpty(number) {
   let nonemptyAuthorsLength = 0;
   for (const author of articleMeta.value.authors) {
-    if (JSON.stringify(author) !== JSON.stringify(genAuthorMeta())) {
+    if (JSON.stringify(author.val) !== JSON.stringify(genAuthorMeta())) {
       nonemptyAuthorsLength += 1;
     }
   }
+  //console.log(nonemptyAuthorsLength);
+  //console.log(articleMeta.value.authors);
   if (nonemptyAuthorsLength === 0) {
-    articleMeta.value.authors = new Array(number);
+    articleMeta.value.nextAuthorId = 1;
+    articleMeta.value.authors = [];
     for (let i = 0; i < number; i++) {
-      articleMeta.value.authors[i] = genAuthorMeta();
+      addEmptyAuthor(articleMeta.value);
     }
   }
+  //console.log(number);
+  //console.log(articleMeta.value.authors);
 }
 
 function parseDublinCore(html, updateExisting=true) {
@@ -456,11 +463,11 @@ function parseDublinCore(html, updateExisting=true) {
     for (const [index, author] of Object.entries(authorElements)) {
       const lang = getElementLang(author);
       const nameObj = splitFullName(author.content);
-      if (nameObj.surname && (updateExisting || !articleMeta.value.authors[index].surnames[lang])) {
-        articleMeta.value.authors[index].surnames[lang] = nameObj.surname;
+      if (nameObj.surname && (updateExisting || !articleMeta.value.authors[index].val.surnames[lang])) {
+        articleMeta.value.authors[index].val.surnames[lang] = nameObj.surname;
       }
-      if (nameObj.givenname && (updateExisting || !articleMeta.value.authors[index].givennames[lang])) {
-        articleMeta.value.authors[index].givennames[lang] = nameObj.givenname;
+      if (nameObj.givenname && (updateExisting || !articleMeta.value.authors[index].val.givennames[lang])) {
+        articleMeta.value.authors[index].val.givennames[lang] = nameObj.givenname;
       }
     }
   }
@@ -563,14 +570,14 @@ function parseHighwirePress(html, updateExisting=true) {
       const lang = getElementLang(author);
       const nameObj = splitFullName(author.content);
       const aff = institutionElements[index].content;
-      if (nameObj.surname && (updateExisting || !articleMeta.value.authors[index].surnames[lang])) {
-        articleMeta.value.authors[index].surnames[lang] = nameObj.surname;
+      if (nameObj.surname && (updateExisting || !articleMeta.value.authors[index].val.surnames[lang])) {
+        articleMeta.value.authors[index].val.surnames[lang] = nameObj.surname;
       }
-      if (nameObj.givenname && (updateExisting || !articleMeta.value.authors[index].givennames[lang])) {
-        articleMeta.value.authors[index].givennames[lang] = nameObj.givenname;
+      if (nameObj.givenname && (updateExisting || !articleMeta.value.authors[index].val.givennames[lang])) {
+        articleMeta.value.authors[index].val.givennames[lang] = nameObj.givenname;
       }
-      if (aff && (updateExisting || !articleMeta.value.authors[index].affiliations[lang])) {
-        articleMeta.value.authors[index].affiliations[lang] = aff;
+      if (aff && (updateExisting || !articleMeta.value.authors[index].val.affiliations[lang])) {
+        articleMeta.value.authors[index].val.affiliations[lang] = aff;
       }
     }
   }
@@ -615,17 +622,17 @@ function parseOjs2Body(html, updateExisting=true) {
       const nameObj = splitFullName(textLines[0]);
       const aff = textLines[1] ?? null;
       const orcid = bio.querySelector('a.orcid');
-      if (updateExisting || !articleMeta.value.authors[index].surnames[lang]) {
-        articleMeta.value.authors[index].surnames[lang] = nameObj.surname;
+      if (updateExisting || !articleMeta.value.authors[index].val.surnames[lang]) {
+        articleMeta.value.authors[index].val.surnames[lang] = nameObj.surname;
       }
-      if (updateExisting || !articleMeta.value.authors[index].givennames[lang]) {
-        articleMeta.value.authors[index].givennames[lang] = nameObj.givenname;
+      if (updateExisting || !articleMeta.value.authors[index].val.givennames[lang]) {
+        articleMeta.value.authors[index].val.givennames[lang] = nameObj.givenname;
       }
-      if (aff && (updateExisting || !articleMeta.value.authors[index].affiliations[lang])) {
-        articleMeta.value.authors[index].affiliations[lang] = aff;
+      if (aff && (updateExisting || !articleMeta.value.authors[index].val.affiliations[lang])) {
+        articleMeta.value.authors[index].val.affiliations[lang] = aff;
       }
-      if (orcid && (updateExisting || !articleMeta.value.authors[index].orcid)) {
-        articleMeta.value.authors[index].orcid = orcid.href.replace('http:', 'https:');
+      if (orcid && (updateExisting || !articleMeta.value.authors[index].val.orcid)) {
+        articleMeta.value.authors[index].val.orcid = orcid.href.replace('http:', 'https:');
       }
     }
   } else {
@@ -634,11 +641,11 @@ function parseOjs2Body(html, updateExisting=true) {
       const authorNames = authorString.textContent.split(/\s?,\s?/).map(fn => splitFullName(fn));
       initializeAuthorsIfEmpty(authorNames.length);
       for (const [index, nameObj] of authorNames.entries()) {
-        if (updateExisting || !articleMeta.value.authors[index].surnames[lang]) {
-          articleMeta.value.authors[index].surnames[lang] = nameObj.surname;
+        if (updateExisting || !articleMeta.value.authors[index].val.surnames[lang]) {
+          articleMeta.value.authors[index].val.surnames[lang] = nameObj.surname;
         }
-        if (updateExisting || !articleMeta.value.authors[index].givennames[lang]) {
-          articleMeta.value.authors[index].givennames[lang] = nameObj.givenname;
+        if (updateExisting || !articleMeta.value.authors[index].val.givennames[lang]) {
+          articleMeta.value.authors[index].val.givennames[lang] = nameObj.givenname;
         }
       }
     }
@@ -700,17 +707,17 @@ function parseOjs3Body(html, updateExisting=true) {
       const nameObj = splitFullName(fullName, (lang === 'en'));
       const aff = author.querySelector('.affiliation')?.textContent.trim() ?? '';
       const orcid = author.querySelector('.orcid a');
-      if (updateExisting || !articleMeta.value.authors[index].surnames[lang]) {
-        articleMeta.value.authors[index].surnames[lang] = nameObj.surname;
+      if (updateExisting || !articleMeta.value.authors[index].val.surnames[lang]) {
+        articleMeta.value.authors[index].val.surnames[lang] = nameObj.surname;
       }
-      if (updateExisting || !articleMeta.value.authors[index].givennames[lang]) {
-        articleMeta.value.authors[index].givennames[lang] = nameObj.givenname;
+      if (updateExisting || !articleMeta.value.authors[index].val.givennames[lang]) {
+        articleMeta.value.authors[index].val.givennames[lang] = nameObj.givenname;
       }
-      if (aff && (updateExisting || !articleMeta.value.authors[index].affiliations[lang])) {
-        articleMeta.value.authors[index].affiliations[lang] = aff;
+      if (aff && (updateExisting || !articleMeta.value.authors[index].val.affiliations[lang])) {
+        articleMeta.value.authors[index].val.affiliations[lang] = aff;
       }
-      if (orcid && (updateExisting || !articleMeta.value.authors[index].orcid)) {
-        articleMeta.value.authors[index].orcid = orcid.href.replace('http:', 'https:');
+      if (orcid && (updateExisting || !articleMeta.value.authors[index].val.orcid)) {
+        articleMeta.value.authors[index].val.orcid = orcid.href.replace('http:', 'https:');
       }
     }
   }
@@ -797,8 +804,11 @@ async function loadByApi() {
       en : pub.keywords[enkey] ? pub.keywords[enkey].join('; ') : '',
       ru : pub.keywords[rukey] ? pub.keywords[rukey].join('; ') : '',
     };
-    articleMeta.value.authors = pub.authors.map((a) => {
+    articleMeta.value.nextAuthorId = 1;
+    articleMeta.value.authors = [];
+    pub.authors.forEach((a) => {
       const tempAuthor = {
+        ...genAuthorMeta(),
         surnames : {
           en : a.familyName[enkey] ? a.familyName[enkey] : '',
           ru : a.familyName[rukey] ? a.familyName[rukey] : ''
@@ -825,7 +835,7 @@ async function loadByApi() {
           ru : a.affiliations.map(aff => aff.name[rukey]).join('; ')
         }
       }
-      return tempAuthor;
+      addAuthor(articleMeta.value, tempAuthor);
     });
     articleMeta.value.copyrightHolder = {
       en : pub.copyrightHolder[enkey] ? pub.copyrightHolder[enkey] : '',

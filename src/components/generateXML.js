@@ -22,8 +22,6 @@ function createXmlWrapper(articleType, lang) {
 }
 
 export default function generateXML(jmeta, ameta) {
-  //const jmeta = journalMeta;
-  //const ameta = articleMeta;
 	const xml = createXmlWrapper(ameta.articleType, ameta.primaryLanguage);
   const a = xml.getElementsByTagName('article')[0];
 	const ns = a.namespaceURI;
@@ -90,7 +88,7 @@ export default function generateXML(jmeta, ameta) {
       articleMeta.appendChild(titleGroup);
     }
   }
-  const isEmptyAuthor = author => (JSON.stringify(author) === JSON.stringify(genAuthorMeta()));
+  const isEmptyAuthor = author => (JSON.stringify(author.val) === JSON.stringify(genAuthorMeta()));
   const atLeastOneAuthor = () => {
     for (const author of ameta.authors) {
       if (!isEmptyAuthor(author)) {
@@ -99,34 +97,33 @@ export default function generateXML(jmeta, ameta) {
     }
     return false;
   }
+  const nonemptyAffiliations = ameta.affiliations.filter(a => (a.val.en || a.val.ru));
   if (atLeastOneAuthor()) {
-    let allAffiliations = [];
     const contribGroup = xml.createElementNS(ns, 'contrib-group');
     for (const author of ameta.authors) {
       if (!isEmptyAuthor(author)) {
         const contrib = xml.createElementNS(ns, 'contrib');
         contrib.setAttribute('contrib-type', 'author');
-        if (author.orcid) {
+        if (author.val.orcid) {
           const contribId = xml.createElementNS(ns, 'contrib-id');
           contribId.setAttribute('contrib-id-type', 'orcid');
-          contribId.textContent = author.orcid;
+          contribId.textContent = author.val.orcid;
           contrib.appendChild(contribId);
         }
-        // TODO ? refactor to not explicitly list "en" and "ru"
-        if (author.surnames.en || author.surnames.ru || author.givennames.en || author.givennames.ru) {
+        if (author.val.surnames.en || author.val.surnames.ru || author.val.givennames.en || author.val.givennames.ru) {
           const nameAlternatives = xml.createElementNS(ns, 'name-alternatives');
-          for (const lang in author.surnames) {
-            if (author.surnames[lang] || author.givennames[lang]) {
+          for (const lang in author.val.surnames) {
+            if (author.val.surnames[lang] || author.val.givennames[lang]) {
               const name = xml.createElementNS(ns, 'name');
               name.setAttributeNS(xmlns, 'lang', lang);
-              if (author.surnames[lang]) {
+              if (author.val.surnames[lang]) {
                 const surname = xml.createElementNS(ns, 'surname');
-                surname.textContent = author.surnames[lang];
+                surname.textContent = author.val.surnames[lang];
                 name.appendChild(surname)
               }
-              if (author.givennames[lang]) {
+              if (author.val.givennames[lang]) {
                 const givenNames = xml.createElementNS(ns, 'given-names');
-                givenNames.textContent = author.givennames[lang];
+                givenNames.textContent = author.val.givennames[lang];
                 name.appendChild(givenNames);
               }
               nameAlternatives.appendChild(name);
@@ -134,49 +131,34 @@ export default function generateXML(jmeta, ameta) {
           }
           contrib.appendChild(nameAlternatives);
         }
-        if (author.email) {
+        if (author.val.email) {
           const email = xml.createElementNS(ns, 'email');
-          email.textContent = author.email;
+          email.textContent = author.val.email;
           contrib.appendChild(email);
         }
-        if (author.affiliations.en || author.affiliations.ru) {
-          const authorAffsEn = author.affiliations.en.trim().split(/\s*;\s*/).filter(line => line.trim() !== "");
-          const authorAffsRu = author.affiliations.ru.trim().split(/\s*;\s*/).filter(line => line.trim() !== "");
-          const numberOfAffiliations = Math.max(authorAffsEn.length, authorAffsRu.length);
-          for (let index = 0; index < numberOfAffiliations; index++) {
-            const authorAff = {
-              en : authorAffsEn[index] ?? null,
-              ru : authorAffsRu[index] ?? null
+        if (author.val.affIds.length) {
+          for (const [index, affiliation] of nonemptyAffiliations.entries()) {
+            if (author.val.affIds.includes(affiliation.id)) {
+              const xref = xml.createElementNS(ns, 'xref');
+              xref.setAttribute('ref-type', 'aff');
+              xref.setAttribute('rid', `aff${index + 1}`);
+              contrib.appendChild(xref);
             }
-            // refNum is 1-based, but its initial value as an index is 0-based
-            let refNum = allAffiliations.findIndex(a => 
-              a.en === authorAff.en && a.ru === authorAff.ru
-            );
-            if (refNum < 0) {
-              allAffiliations.push(authorAff);
-              refNum = allAffiliations.length;
-            } else {
-              refNum += 1;
-            }
-            const xref = xml.createElementNS(ns, 'xref');
-            xref.setAttribute('ref-type', 'aff');
-            xref.setAttribute('rid', `aff${refNum}`);
-            contrib.appendChild(xref);
           }
         }
         contribGroup.appendChild(contrib);
       }
     }
     articleMeta.appendChild(contribGroup);
-    for (const [index, affiliation] of allAffiliations.entries()) {
+    for (const [index, affiliation] of nonemptyAffiliations.entries()) {
       const affAlternatives = xml.createElementNS(ns, 'aff-alternatives');
       affAlternatives.setAttribute('id', `aff${index + 1}`);
-      for (const lang in affiliation) {
-        if (affiliation[lang]) {
+      for (const lang in affiliation.val) {
+        if (affiliation.val[lang]) {
           const aff = xml.createElementNS(ns, 'aff');
           const institution = xml.createElementNS(ns, 'institution');
           institution.setAttributeNS(xmlns, 'lang', lang);
-          institution.textContent = affiliation[lang];
+          institution.textContent = affiliation.val[lang];
           aff.appendChild(institution);
           affAlternatives.appendChild(aff);
         }

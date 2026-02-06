@@ -14,8 +14,8 @@ const props = defineProps({
 const meta = computed(() => parseXMLDOM(props.xml)?.article);
 
 function getFullname(author, lang) {
-  const givennames = author.givennames[lang];
-  const surname = author.surnames[lang];
+  const givennames = author.val.givennames[lang];
+  const surname = author.val.surnames[lang];
   let fullname = '';
   if (surname && givennames) {
     fullname = `${givennames} ${surname}`;
@@ -36,14 +36,24 @@ function getFullnameWithFallback(author, lang) {
   return fullname;
 }
 
-function getAffiliationWithFallback(index, lang) {
-  const otherLang = lang === 'ru' ? 'en' : 'ru';
-  return meta.value.affiliations[index][lang] || meta.value.affiliations[index][otherLang];
+function getAffNumbers(author) {
+  const numbers = [];
+  for (const [i, aff] of meta.value.affiliations.entries()) {
+    if (author.val.affIds.includes(aff.id)) {
+      numbers.push(i + 1);
+    }
+  }
+  return numbers;
 }
 
-const thereAreAuthors = (lang) => meta.value.authors.some(a => a.surnames[lang] || a.givennames[lang]);
+function getAffiliationWithFallback(aff, lang) {
+  const otherLang = lang === 'ru' ? 'en' : 'ru';
+  return aff.val[lang] || aff.val[otherLang];
+}
 
-const thereAreAffiliations = (lang) => meta.value.affiliations.some(a => a[lang]);
+const thereAreAuthors = (lang) => meta.value.authors.some(a => a.val.surnames[lang] || a.val.givennames[lang]);
+
+const thereAreAffiliations = (lang) => meta.value.affiliations.some(a => a.val[lang]);
 
 const tr = (lang, ru, en) => (lang === 'ru') ? ru : en;
 
@@ -52,10 +62,17 @@ const detailsOpen = ref({
   ru: true
 });
 
+const splitReferences = computed(() => {
+  return {
+    en: meta.value.citations.en.split(/\r?\n|\r/),
+    ru: meta.value.citations.ru.split(/\r?\n|\r/)
+  };
+});
+
 const detailsCaptions = computed(() => {
   const suffixes = {
-    en: ' References:',
-    ru: ' Список литературы:'
+    en: ` References (${splitReferences.value.en.length}):`,
+    ru: ` Список литературы (${splitReferences.value.ru.length}):`
   }
   return {
     en: (detailsOpen.value.en ? '▼' : '►') + suffixes.en,
@@ -100,21 +117,21 @@ const handleToggle = (lang, e) => {
       <div v-if="meta.titles[lang]" class="title">{{ meta.titles[lang] }}</div>
       <div v-else class="warning">{{ tr(lang, 'нет заголовка', 'no title') }}</div>
       <div v-if="thereAreAuthors(lang)" class="authors">
-        <span v-for="(a, index) in meta.authors" :key="index" class="author">
+        <span v-for="(a, index) in meta.authors" :key="a.id" class="author">
           <span class="fullname">{{ getFullnameWithFallback(a, lang) }}</span>
-          <sup v-if="a.affNumbers.length">{{ ' ' + a.affNumbers.join(', ') }}</sup>
-          <a v-if="a.email" :href="`mailto:${a.email}`" target="_blank" class="email-logo">✉</a>
-          <a v-if="a.orcid" :href="a.orcid" target="_blank" class="orcid-logo"><img :src="orcidIcon" alt="orcid logo" /></a>
+          <sup v-if="a.val.affIds.length">{{ ' ' + getAffNumbers(a).join(', ') }}</sup>
+          <a v-if="a.val.email" :href="`mailto:${a.val.email}`" target="_blank" class="email-logo">✉</a>
+          <a v-if="a.val.orcid" :href="a.val.orcid" target="_blank" class="orcid-logo"><img :src="orcidIcon" alt="orcid logo" /></a>
           <span v-if="index + 1 < meta.authors.length">, </span>
         </span>
       </div>
       <div v-else class="warning">{{ tr(lang, 'нет авторов', 'no authors') }}</div>
       <div v-if="thereAreAffiliations(lang)" class="affiliations">
         <ol>
-          <li v-for="(aff, index) in meta.affiliations" :key="index">{{ getAffiliationWithFallback(index, lang) }}</li>
+          <li v-for="aff in meta.affiliations" :key="aff.id">{{ getAffiliationWithFallback(aff, lang) }}</li>
         </ol>
       </div>
-      <div v-else class="warning">{{ tr(lang, 'нет аффилиация', 'no affiliations') }}</div>
+      <div v-else class="warning">{{ tr(lang, 'нет аффилиаций', 'no affiliations') }}</div>
       <div v-if="meta.abstracts[lang]" class="abstract">
         <span class="description">{{ tr(lang, 'Аннотация: ', 'Abstract: ') }}</span>
         {{ meta.abstracts[lang] }}
@@ -148,7 +165,7 @@ const handleToggle = (lang, e) => {
       <details v-if="meta.citations[lang]" class="citations" :open="detailsOpen[lang]" @toggle="handleToggle(lang, $event)">
         <summary>{{ detailsCaptions[lang] }}</summary>
         <ol>
-          <li v-for="(ref, index) in meta.citations[lang].split(/\r?\n|\r/)" :key="index">{{ ref }}</li>
+          <li v-for="(ref, index) in splitReferences[lang]" :key="index">{{ ref }}</li>
         </ol>
       </details>
       <div v-else class="warning">{{ tr(lang, 'нет списка литературы', 'no references') }}</div>

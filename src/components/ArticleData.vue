@@ -3,8 +3,8 @@ import BilingualTextInput from './controls/BilingualTextInput.vue';
 import TextInput from './controls/TextInput.vue';
 import SelectInput from './controls/SelectInput.vue';
 import SelectLicense from './controls/SelectLicense.vue';
-import CheckboxInput from './controls/CheckboxInput.vue';
-import { genAuthorMeta, genArticleMeta } from './metadataTemplates';
+import SwitchInput from './controls/SwitchInput.vue';
+import { genArticleMeta, addEmptyAffiliation, deleteAffiliation, addEmptyAuthor, deleteAuthor } from './metadataTemplates';
 import AuthorData from './AuthorData.vue';
 import { gs } from './store.js';
 
@@ -13,14 +13,6 @@ const meta = defineModel({
   required : true,
   default : genArticleMeta()
 });
-
-const addAuthor = (index) => {
-  meta.value.authors.splice(index + 1, 0, genAuthorMeta());
-};
-
-const deleteAuthor = (index) => {
-  meta.value.authors.splice(index, 1);
-};
 
 function removeHtmlFromText(html) {
   let tempDiv = document.createElement('div');
@@ -50,7 +42,7 @@ function changeKeywordSeparators() {
 }
 
 function generateCopyrightHolders() {
-  const hasNameInLang = (author, lang) => (author.surnames[lang] || author.givennames[lang]);
+  const hasNameInLang = (author, lang) => (author.val.surnames[lang] || author.val.givennames[lang]);
   const someRussian = meta.value.authors.some(a => hasNameInLang(a, 'ru'));
   const someEnglish = meta.value.authors.some(a => hasNameInLang(a, 'en'));
   const bilingualAuthors = someRussian && someEnglish;
@@ -58,7 +50,7 @@ function generateCopyrightHolders() {
     const otherLang = (lang === 'en') ? 'ru' : 'en';
     const fullnames = meta.value.authors.map(a => {
       const usedLang = (bilingualAuthors && !hasNameInLang(a, lang)) ? otherLang : lang;
-      return `${a.givennames[usedLang]} ${a.surnames[usedLang]}`.trim();
+      return `${a.val.givennames[usedLang]} ${a.val.surnames[usedLang]}`.trim();
     }).filter(Boolean);
     meta.value.copyrightHolders[lang] = fullnames.join(', ').trim();
   }
@@ -80,14 +72,14 @@ function correctDates() {
 
 function removeNames(lang) {
   for (const author of meta.value.authors) {
-    author.surnames[lang] = '';
-    author.givennames[lang] = '';
+    author.val.surnames[lang] = '';
+    author.val.givennames[lang] = '';
   }
 }
 
 function removeEmails() {
   for (const author of meta.value.authors) {
-    author.email = '';
+    author.val.email = '';
   }
 }
 
@@ -150,30 +142,52 @@ const doiPattern = '10\\.\\d{4,9}\\/.+'; // oversimplified to avoid errors
       <button class="border small-round vertical small-elevate primary-border primary-text" @click="() => changeKeywordSeparators()">Поменять "," на ";"</button>
     </div>
 
-    <h4 class="small">Авторы и аффилиации</h4>
-    <template v-for="(author, authorIndex) in meta.authors" :key="authorIndex">
+    <h4 class="small">Аффилиации</h4>
+    <div class="management-buttons">
+      <button class="border small-round small-elevate small primary-border primary-text" @click="addEmptyAffiliation(meta, 0)">
+        <i>add</i>
+        <span>Добавить аффилиацию</span>
+      </button>
+    </div>
+    <template v-for="(aff, affIndex) in meta.affiliations" :key="aff.id">
+        <h5 class="small">{{ `Аффилиация ${affIndex + 1}` }}</h5>
+        <BilingualTextInput class="affiliation" caption="Организация" :showOptions="gs.show" v-model="aff.val" />
+        <div class="management-buttons">
+          <button class="border small-round small-elevate small primary-border primary-text" @click="addEmptyAffiliation(meta, affIndex + 1)">
+            <i>add</i>
+            <span>Добавить аффилиацию</span>
+          </button>
+          <button class="border small-round small-elevate small primary-border primary-text" @click="deleteAffiliation(meta, aff.id)">
+            <i>remove</i>
+            <span>Удалить аффилиацию</span>
+          </button>
+        </div>
+    </template>
+
+    <h4 class="small">Авторы</h4>
+    <div class="management-buttons">
+      <button class="border small-round small-elevate small primary-border primary-text" @click="addEmptyAuthor(meta, 0)">
+        <i>add</i>
+        <span>Добавить автора</span>
+      </button>
+    </div>
+    <template v-for="(author, authorIndex) in meta.authors" :key="author.id">
       <h5 class="small">{{ `Автор ${authorIndex + 1}` }}</h5>
-      <AuthorData v-model="meta.authors[authorIndex]" />
-      <div class="author-management-buttons">
-        <button class="border small-round small-elevate small primary-border primary-text" @click="() => addAuthor(authorIndex)">
+      <AuthorData v-model="author.val" :affiliations="meta.affiliations" />
+      <div class="management-buttons">
+        <button class="border small-round small-elevate small primary-border primary-text" @click="addEmptyAuthor(meta, authorIndex + 1)">
           <i>add</i>
           <span>Добавить автора</span>
         </button>
-        <button v-if="meta.authors.length >= 1" class="border small-round small-elevate small primary-border primary-text" @click="() => deleteAuthor(authorIndex)">
+        <button class="border small-round small-elevate small primary-border primary-text" @click="deleteAuthor(meta, author.id)">
           <i>remove</i>
           <span>Удалить автора</span>
         </button>
       </div>
     </template>
-    <div v-if="meta.authors.length === 0" class="author-management-buttons">
-      <button class="border small-round small-elevate small primary-border primary-text" @click="() => addAuthor(0)">
-        <i>add</i>
-        <span>Добавить автора</span>
-      </button>
-    </div>
     <div class="modify-content-buttons">
-      <button class="border small-round vertical small-elevate primary-border primary-text" @click="() => removeNames('ru')">Убрать ФИО (РУС)</button>
-      <button class="border small-round vertical small-elevate primary-border primary-text" @click="() => removeNames('en')">Убрать ФИО (ENG)</button>
+      <button class="border small-round vertical small-elevate primary-border primary-text" @click="removeNames('ru')">Убрать ФИО (РУС)</button>
+      <button class="border small-round vertical small-elevate primary-border primary-text" @click="removeNames('en')">Убрать ФИО (ENG)</button>
       <button class="border small-round vertical small-elevate primary-border primary-text" @click="removeEmails">Убрать email</button>
     </div>
 
@@ -186,7 +200,7 @@ const doiPattern = '10\\.\\d{4,9}\\/.+'; // oversimplified to avoid errors
     </div>
     <TextInput caption="Том" :showOptions="gs.show" v-model="meta.volume" />
     <TextInput caption="Номер" :showOptions="gs.show" v-model="meta.issue" />
-    <CheckboxInput caption="Использовать Elocation ID *" v-model="meta.useElocationId" />
+    <SwitchInput caption="Использовать Elocation ID *" v-model="meta.useElocationId" />
     <TextInput 
       :caption="meta.useElocationId ? 'Elocation ID *' : 'Страницы *'" 
       :hint="meta.useElocationId ? '' : 'только номера страниц через дефис'" 
@@ -213,7 +227,7 @@ const doiPattern = '10\\.\\d{4,9}\\/.+'; // oversimplified to avoid errors
 </template>
 
 <style scoped>
-  .author-management-buttons {
+  .management-buttons {
     display: flex;
     gap: 0.5rem;
     margin-top: 1rem;
@@ -223,5 +237,8 @@ const doiPattern = '10\\.\\d{4,9}\\/.+'; // oversimplified to avoid errors
     gap: 0.5rem;
     justify-content: flex-end;
     margin-top: 0.5rem;
+  }
+  h3, h4, h5 {
+    margin-top: 1.5rem !important;
   }
 </style>

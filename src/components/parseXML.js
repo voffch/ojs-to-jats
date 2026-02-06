@@ -1,4 +1,4 @@
-import { genJournalMeta, genArticleMeta, genAuthorMeta } from "./metadataTemplates";
+import { genJournalMeta, genArticleMeta, genAuthorMeta, addAuthor } from "./metadataTemplates";
 
 export default function parseXML(xmlString) {
   const parser = new DOMParser();
@@ -47,7 +47,9 @@ export function parseXMLDOM(xml) {
     titles : getBilingualText('article-title'),
     abstracts : getBilingualText('abstract'),
     keywords : getMultipleBilingualTexts('kwd', '; '),
+    // nextAuthorId : 1,
     // authors : [],
+    // nextAffiliationId : 1,
     // affiliations : [],
     copyrightHolders : getBilingualText('copyright-holder'),
     licenseUrl : getAttrNS('license', xlinkns, 'href'),
@@ -78,37 +80,41 @@ export function parseXMLDOM(xml) {
     }
   }
   // authors and affs
-  const affiliations = [];
+  ameta.nextAffiliationId = 1;
+  ameta.affiliations = [];
   Array.from(xml.querySelectorAll('aff-alternatives')).forEach((aa) => {
-    affiliations.push({
-      en: aa.querySelector('institution:lang(en)')?.textContent.trim() ?? '',
-      ru: aa.querySelector('institution:lang(ru)')?.textContent.trim() ?? ''
+    const id = parseInt(aa.getAttribute('id')?.match(/\d+/));
+    if (id) {
+      if (ameta.nextAffiliationId <= id) {
+        ameta.nextAffiliationId = id + 1;
+      }
+    } else {
+      throw new Error('Incorrect affiliation ID');
+    }
+    ameta.affiliations.push({
+      id: id,
+      val: {
+        en: aa.querySelector('institution:lang(en)')?.textContent.trim() ?? '',
+        ru: aa.querySelector('institution:lang(ru)')?.textContent.trim() ?? ''
+      }
     });
   });
-  ameta.affiliations = affiliations;
   const authors = Array.from(xml.querySelectorAll('contrib')).map((contrib) => {
-    const affNumbers = Array.from(contrib.querySelectorAll(`xref[ref-type="aff"]`)).map((xref) => {
+    const affIds = Array.from(contrib.querySelectorAll(`xref[ref-type="aff"]`)).map((xref) => {
       const rid = xref.getAttribute('rid');
       return parseInt(rid?.match(/\d+/));
     }).filter(x => !isNaN(x));
-    function assignAffiliations(affNumbers, affiliations) {
-      return {
-        en: affNumbers.map(i => affiliations[i - 1].en).filter(Boolean).join('; '),
-        ru: affNumbers.map(i => affiliations[i - 1].ru).filter(Boolean).join('; '),
-      };
-    }
     const author = {
       ...genAuthorMeta(),
       surnames : getBilingualText('surname', contrib),
       givennames : getBilingualText('given-names', contrib),
       email : getText('email', contrib),
       orcid : getText('contrib-id[contrib-id-type="orcid"]', contrib),
-      affiliations : assignAffiliations(affNumbers, affiliations),
-      affNumbers : affNumbers
+      affIds : affIds
     }
     return author;
   });
-  ameta.authors = authors;
+  authors.forEach((a) => addAuthor(ameta, a));
   return {
     journal: jmeta,
     article: ameta
