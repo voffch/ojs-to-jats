@@ -2,7 +2,7 @@
 import { ref, computed } from 'vue';
 import { parseXMLDOM } from './parseXML';
 
-const orcidIcon = '/img/ORCID-iD_icon_unauth_vector.svg';
+const orcidIcon = './img/ORCID-iD_icon_unauth_vector.svg';
 
 const props = defineProps({
   xml : {

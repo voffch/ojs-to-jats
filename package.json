@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build-github-pages": "vite build --base=/ojs-to-jats/",
     "watch": "vite build --watch --mode development",
     "watch-dev": "vite build --watch",
     "preview": "vite preview"
