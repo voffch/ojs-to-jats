@@ -2,10 +2,13 @@
   "name":"OJS to JATS",
   "browser_specific_settings": {
     "gecko": {
-      "id": "@ojs-to-jats.voffch"
+      "id": "@ojs-to-jats.voffch",
+      "data_collection_permissions": {
+        "required": ["none"]
+      }
     }
   },
-  "version":"0.0.1",
+  "version":"0.0.2",
   "manifest_version": 3,
   "icons": {
     "16": "icon/16.png",

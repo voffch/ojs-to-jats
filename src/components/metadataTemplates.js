@@ -175,9 +175,9 @@ export function deaffiliateAuthorVal(authorVal, affId) {
 }
 
 function removeHtmlFromText(html) {
-  let tempDiv = document.createElement('div');
-  tempDiv.innerHTML = html;
-  return tempDiv.textContent;
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, 'text/html');
+  return doc.body.textContent || "";
 }
 
 export function removeHtmlFromTitlesAbstracts(articleMeta) {
