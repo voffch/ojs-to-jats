@@ -82,8 +82,11 @@ async function requestHostPermissions(href) {
   return granted;
 }
 
-function createUrlForLocaleChange(newLocale) {
-  const locale = newLocale.includes('ru') ? 'ru_RU' : 'en_US';
+function createUrlForLocaleChange(newLocale, ojsVersion=2.4) {
+  let locale = newLocale.includes('ru') ? 'ru_RU' : 'en_US';
+  if (ojsVersion === 3.4) {
+    locale = newLocale.includes('ru') ? 'ru' : 'en';
+  }
   const articleUrlObject = new URL(articleUrl.value);
   const url = new URL(`user/setLocale/${locale}`, baseUrl.value);
   url.searchParams.append('source', articleUrlObject.pathname);
@@ -117,10 +120,10 @@ async function loadPublication() {
         if (!apiAccessed) {
           const newLang = firstStatus.lang === 'en' ? 'ru' : 'en';
           await sleep(250);
-          const secondStatus = await loadOjsWebpage(newLang);
+          const secondStatus = await loadOjsWebpage(newLang, firstStatus.ojsVersion);
           if (secondStatus.lang && (secondStatus.lang !== firstStatus.lang)) {
             await sleep(250);
-            switchLanguageOnly(firstStatus.lang);
+            switchLanguageOnly(firstStatus.lang, firstStatus.ojsVersion);
           }
         }
         // final data sanitizing on success should go here
@@ -145,8 +148,8 @@ async function loadPublication() {
 
 // WEBPAGES
 
-async function switchLanguageOnly(lang) {
-  const url = createUrlForLocaleChange(lang);
+async function switchLanguageOnly(lang, ojsVersion) {
+  const url = createUrlForLocaleChange(lang, ojsVersion);
   logInfo(`Переключаю язык на ${lang} запросом к ${url}`);
   const response = await fetch(url, {
     method: 'GET',
@@ -157,7 +160,7 @@ async function switchLanguageOnly(lang) {
   });
 }
 
-async function loadOjsWebpage(newLang=null) {
+async function loadOjsWebpage(newLang=null, ojsVersion=2.4) {
   function checkResponse(response) {
     if (!response.ok) {
       let statusText = '';
@@ -186,7 +189,7 @@ async function loadOjsWebpage(newLang=null) {
   if (newLang) {
     logInfo(`Переключаю язык на ${newLang}`);
   }
-  const url = newLang ? createUrlForLocaleChange(newLang) : articleUrl.value;
+  const url = newLang ? createUrlForLocaleChange(newLang, ojsVersion) : articleUrl.value;
   logInfo(`Загрузка веб-страницы ${url}`);
   const response = await fetch(url, {
     method: 'GET',
@@ -623,7 +626,10 @@ function parseOjs2Body(html, updateExisting=true) {
   if (license && (updateExisting || !articleMeta.value.licenseUrl)) {
     articleMeta.value.licenseUrl = license.href;
   }
-  const citations = html.querySelectorAll('#articleCitations p');
+  let citations = html.querySelectorAll('#articleCitations p');
+  if (!citations.length || html.querySelector('#articleCitations ol')) {
+    citations = html.querySelectorAll('#articleCitations li'); // for customly hacked templates
+  }
   if (citations.length && (updateExisting || !articleMeta.value.citations.en)) {
     articleMeta.value.citations.en = Array.from(citations, (c) => c.textContent).join('\n');
   }
@@ -653,12 +659,14 @@ function parseOjs2Body(html, updateExisting=true) {
     if (authorString) {
       const authorNames = authorString.textContent.split(/\s?,\s?/).map(fn => splitFullName(fn));
       initializeAuthorsIfEmpty(authorNames.length);
-      for (const [index, nameObj] of authorNames.entries()) {
-        if (updateExisting || !articleMeta.value.authors[index].val.surnames[lang]) {
-          articleMeta.value.authors[index].val.surnames[lang] = nameObj.surname;
-        }
-        if (updateExisting || !articleMeta.value.authors[index].val.givennames[lang]) {
-          articleMeta.value.authors[index].val.givennames[lang] = nameObj.givenname;
+      if (articleMeta.value.authors.length === authorNames.length) {
+        for (const [index, nameObj] of authorNames.entries()) {
+          if (updateExisting || !articleMeta.value.authors[index].val.surnames[lang]) {
+            articleMeta.value.authors[index].val.surnames[lang] = nameObj.surname;
+          }
+          if (updateExisting || !articleMeta.value.authors[index].val.givennames[lang]) {
+            articleMeta.value.authors[index].val.givennames[lang] = nameObj.givenname;
+          }
         }
       }
     }

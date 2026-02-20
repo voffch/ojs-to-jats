@@ -104,7 +104,13 @@ const doiPattern = '10\\.\\d{4,9}\\/.+'; // oversimplified to avoid errors
       :showOptions="gs.show" 
       v-model="meta.doi" 
       :url="`https://doi.org/${meta.doi}`" />
-    <TextInput caption="EDN" hint="6 заглавных латинских букв" pattern="[A-Z]{6}" :showOptions="gs.show" v-model="meta.edn" />
+    <TextInput 
+      caption="EDN" 
+      hint="6 заглавных латинских букв" 
+      pattern="[A-Z]{6}" 
+      :showOptions="gs.show" 
+      v-model="meta.edn" 
+      :url="`https://elibrary.ru/${meta.edn}`" />
     <TextInput 
       caption="URL страницы публикации на сайте журнала"
       :pattern="urlPattern"
