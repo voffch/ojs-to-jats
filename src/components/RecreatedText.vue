@@ -111,16 +111,15 @@ const handleToggle = (lang, e) => {
         <a :href="meta.pdfUrl" target="_blank" class="link underline">{{ meta.pdfUrl }}</a>
       </div>
       <div v-else class="warning">{{ tr(lang, 'нет ссылки на PDF статьи', 'no article PDF URL') }}</div>
-      <div v-if="meta.licenseUrl && meta.copyrightHolders[lang]" class="copyright">
-        <div class="copyright-statement">
-          {{ `Copyright © ${meta.copyrightYear ? (meta.copyrightYear + ' ') : ''}${meta.copyrightHolders[lang]}` }}
-        </div>
-        <div class="copyright-license">
-          <span>{{ tr(lang, 'Распространяется по лицензии ', 'Licensed under ') }}</span>
-          <a :href="meta.licenseUrl" target="_blank" class="link underline">{{ meta.licenseUrl }}</a>
-        </div>
+      <div v-if="meta.copyrightHolders[lang]" class="copyright-statement">
+        {{ `Copyright © ${meta.copyrightYear ? (meta.copyrightYear + ' ') : ''}${meta.copyrightHolders[lang]}` }}
       </div>
-      <div v-else class="warning">{{ tr(lang, 'нет ссылки на лицензию или правообладателей', 'no license URL or copyright holders') }}</div>
+      <div v-else class="warning">{{ tr(lang, 'нет правообладателей', 'no copyright holders') }}</div>
+      <div v-if="meta.licenseUrl" class="copyright-license">
+        <span>{{ tr(lang, 'Распространяется по лицензии ', 'Licensed under ') }}</span>
+        <a :href="meta.licenseUrl" target="_blank" class="link underline">{{ meta.licenseUrl }}</a>
+      </div>
+      <div v-else class="warning">{{ tr(lang, 'нет ссылки на лицензию', 'no license URL') }}</div>
       <div v-if="meta.titles[lang]" class="title">{{ meta.titles[lang] }}</div>
       <div v-else class="warning">{{ tr(lang, 'нет заголовка', 'no title') }}</div>
       <div v-if="thereAreAuthors(lang)" class="authors">

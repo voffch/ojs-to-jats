@@ -219,42 +219,49 @@ export default function generateXML(jmeta, ameta) {
     }
     articleMeta.appendChild(history);
   }
-  // separate permissions elements
-  if (ameta.licenseUrl) {
+  // one permissions element
+  if (ameta.licenseUrl || ameta.copyrightHolders.en || ameta.copyrightHolders.ru) {
+    const permissions = xml.createElementNS(ns, 'permissions');
     for (const lang in ameta.copyrightHolders) {
       if (ameta.copyrightHolders[lang]) {
-        const permissions = xml.createElementNS(ns, 'permissions');
-        permissions.setAttributeNS(xmlns, 'lang', lang);
         const copyrightStatement = xml.createElementNS(ns, 'copyright-statement');
+        copyrightStatement.setAttributeNS(xmlns, 'lang', lang);
         copyrightStatement.textContent = `Copyright © ${ameta.copyrightYear ? (ameta.copyrightYear + ' ') : ''}${ameta.copyrightHolders[lang]}`;
         permissions.appendChild(copyrightStatement);
-        if (ameta.copyrightYear) {
-          const copyrightYear = xml.createElementNS(ns, 'copyright-year');
-          copyrightYear.textContent = ameta.copyrightYear;
-          permissions.appendChild(copyrightYear);
-        }
-        const copyrightHolder = xml.createElementNS(ns, 'copyright-holder');
-        copyrightHolder.textContent = ameta.copyrightHolders[lang];
-        permissions.appendChild(copyrightHolder);
-        if (ameta.licenseUrl.includes('creativecommons')) { //this is optional
-          const freeToRead = xml.createElementNS('http://www.niso.org/schemas/ali/1.0/', 'free_to_read');
-          permissions.appendChild(freeToRead);
-        }
-        const license = xml.createElementNS(ns, 'license');
-        if (ameta.licenseUrl.includes('creativecommons')) {
-          license.setAttribute('license-type', 'open-access');
-        }
-        license.setAttributeNS(xlinkns, 'href', ameta.licenseUrl);
-        const licenseParagraphText = licenses[ameta.licenseUrl];
-        if (licenseParagraphText && licenseParagraphText !== 'Иное') { // wtf is Иное anyway?
-          const licenseP = xml.createElementNS(ns, 'license-p');
-          licenseP.textContent = licenseParagraphText;
-          license.appendChild(licenseP);
-        }
-        permissions.appendChild(license);
-        articleMeta.appendChild(permissions);
       }
     }
+    if (ameta.copyrightYear) {
+      const copyrightYear = xml.createElementNS(ns, 'copyright-year');
+      copyrightYear.textContent = ameta.copyrightYear;
+      permissions.appendChild(copyrightYear);
+    }
+    for (const lang in ameta.copyrightHolders) {
+      if (ameta.copyrightHolders[lang]) {
+        const copyrightHolder = xml.createElementNS(ns, 'copyright-holder');
+        copyrightHolder.setAttributeNS(xmlns, 'lang', lang);
+        copyrightHolder.textContent = ameta.copyrightHolders[lang];
+        permissions.appendChild(copyrightHolder);
+      }
+    }
+    if (ameta.licenseUrl.includes('creativecommons')) {
+      const freeToRead = xml.createElementNS('http://www.niso.org/schemas/ali/1.0/', 'free_to_read');
+      permissions.appendChild(freeToRead);
+    }
+    if (ameta.licenseUrl) {
+      const license = xml.createElementNS(ns, 'license');
+      if (ameta.licenseUrl.includes('creativecommons')) {
+        license.setAttribute('license-type', 'open-access');
+      }
+      license.setAttributeNS(xlinkns, 'href', ameta.licenseUrl);
+      const licenseParagraphText = licenses[ameta.licenseUrl];
+      if (licenseParagraphText && licenseParagraphText !== 'Иное') { // wtf is Иное anyway?
+        const licenseP = xml.createElementNS(ns, 'license-p');
+        licenseP.textContent = licenseParagraphText;
+        license.appendChild(licenseP);
+      }
+      permissions.appendChild(license);
+    }
+    articleMeta.appendChild(permissions);
   }
   if (ameta.pageUrl) {
     const selfUri = xml.createElementNS(ns, 'self-uri');
