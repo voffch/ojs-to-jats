@@ -93,6 +93,7 @@ const doiPattern = '10\\.\\d{4,9}\\/.+'; // oversimplified to avoid errors
         'review-article'   : 'Обзорная статья',
         'editorial'        : 'От редакции',
         'brief-report'     : 'Краткое сообщение',
+        'book-review'      : 'Обзор на книгу',
         'correction'       : 'Сообщение о коррекции',
         'retraction'       : 'Сообщение о ретракции',
       }"
