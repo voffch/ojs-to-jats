@@ -49,7 +49,7 @@ const xmlTabActive = ref(false);
       </a>
     </div>
     <div v-if="xmlTabActive" class="page padding" :class="{ 'active' : xmlTabActive }">
-      <HighlightedXML :xmlString="xmlString" />
+      <HighlightedXML :xmlString="xmlString" validatorUrl="https://jats4r-validator.niso.org/" />
     </div>
     <div v-else class="page padding" :class="{ 'active' : !xmlTabActive }">
       <RecreatedText :xml="xml" />

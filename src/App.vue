@@ -4,6 +4,7 @@ import GlobalSettings from './components/Settings.vue';
 import OJSFetcher from "./components/OJSFetcher.vue";
 import ArticleWrapper from "./components/ArticleWrapper.vue";
 import Help from "./components/Help.vue";
+import Crossref from "./components/Crossref.vue";
 import { environment } from './components/store.js';
 import { genJournalMeta, genArticleMeta } from "./components/metadataTemplates.js";
 import parseXML from './components/parseXML.js';
@@ -29,6 +30,7 @@ const baseUrl = ref('');
 const submissionId = ref('');
 
 const helpOpened = ref(false);
+const crossrefOpened = ref(false);
 
 onMounted(() => {
   environment.update();
@@ -73,6 +75,10 @@ function scrollToBottom() {
 
 function openHelp() {
   helpOpened.value = true;
+}
+
+function openCrossref() {
+  crossrefOpened.value = true;
 }
 
 const xmlFileInput = ref(null);
@@ -173,6 +179,12 @@ async function downloadXml() {
         </button>
       </li>
       <li class="top-margin">
+        <button class="fill" @click="openCrossref">
+          <i>attach_file</i>
+          <span>Crossref</span>
+        </button>
+      </li>
+      <li class="top-margin">
         <button class="fill" @click="openHelp">
           <i>help</i>
           <span>Справка</span>
@@ -181,6 +193,7 @@ async function downloadXml() {
     </menu>
   </div>
   <Help v-model="helpOpened" />
+  <Crossref v-model="crossrefOpened" />
 </template>
 
 <style scoped>
