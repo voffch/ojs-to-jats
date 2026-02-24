@@ -22,9 +22,9 @@ export default function generateCrossrefXML(heads, metas) {
 	const ai = "http://www.crossref.org/AccessIndicators.xsd";
   const fr = "http://www.crossref.org/fundref.xsd";
 
-	function makePublicationDate(dateText, mediaType='online') {
+	function makePublicationDate(dateText, mediaType='online', dateType='publication') {
     if (!dateText) return null;
-		const publication_date = xml.createElementNS(ns, 'publication_date');
+		const publication_date = xml.createElementNS(ns, `${dateType}_date`);
 		publication_date.setAttribute('media_type', mediaType);
     const date_parts = dateText.split('-');
     let day = null;
@@ -176,7 +176,7 @@ export default function generateCrossrefXML(heads, metas) {
       }
       let abstract = null;
       if (ameta.abstracts.en) {
-        const abstract = xml.createElementNS(jats, 'abstract');
+        abstract = xml.createElementNS(jats, 'abstract');
         const p = xml.createElementNS(jats, 'p');
         abstract.appendChild(p);
         p.textContent = ameta.abstracts.en;//.replace(/\r?\n|\r/g, " ").trim(); // TODO: html
@@ -186,7 +186,7 @@ export default function generateCrossrefXML(heads, metas) {
 			const publication_date_article = makePublicationDate(heads['publication_date'], 'print');
       let acceptance_date = null;
       if (ameta.dateAccepted) {
-        acceptance_date = makePublicationDate(ameta.dateAccepted);
+        acceptance_date = makePublicationDate(ameta.dateAccepted, 'online', 'acceptance');
       }
       let pages = null;
       if (ameta.pages) {
