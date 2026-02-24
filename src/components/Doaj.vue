@@ -1,27 +1,11 @@
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue';
-import TextInput from './controls/TextInput.vue';
+import { ref, computed, watch } from 'vue';
 import HighlightedXML from './HighlightedXML.vue';
-import generateCrossrefXML from './generateCrossrefXML.js';
-import parseJatsXML from './parseJatsXML.js';
+import generateDoajXML from './generateDoajXML';
+import parseJatsXML from './parseJatsXML';
 import getTimestamp from './timestamp.js';
 
-import markdownit from 'markdown-it';
-const md = markdownit();
-import HelpCrossref from './HelpCrossref.md?raw';
-const renderedHelpCrossref = computed(() => {
-  return md.render(HelpCrossref);
-});
-
 const xmlString = ref('');
-const head = ref({
-  timestamp: '',
-  depositor_name: '',
-  email_address: '',
-  registrant: '',
-  epublication_date: '',
-  publication_date: ''
-});
 const helpOpen = ref(false);
 const issn = ref(''); // for the filename generation
 const xmlPreviewOpen = ref(false);
@@ -29,34 +13,10 @@ const xmlPreviewIsBeingGenerated = ref(false);
 const xmlIsBeingGenerated = ref(false);
 const jatsFiles = ref([]);
 
-onMounted(() => {
-  const stored = localStorage.getItem('jats-maker-crossref-settings');
-  if (stored) {
-    Object.assign(head.value, JSON.parse(stored));
-  }
+watch(jatsFiles, () => {
+  xmlString.value = '';
+  xmlPreviewOpen.value = false;
 });
-
-function storeCrossrefSettings() {
-  const settings = {
-    depositor_name: head.value.depositor_name,
-    email_address: head.value.email_address,
-    registrant: head.value.registrant,
-  }
-  localStorage.setItem('jats-maker-crossref-settings', JSON.stringify(settings));
-}
-
-watch(
-  [head, jatsFiles],
-  ([newHead, newJatsFiles], [oldHead, oldJatsFiles]) => {
-    xmlString.value = '';
-    xmlPreviewOpen.value = false;
-    for (const prop of ['depositor_name', 'email_address', 'registrant']) {
-      if (newHead[prop] !== oldHead['prop']) {
-        storeCrossrefSettings();
-        break;
-      }
-    }
-}, { deep: true });
 
 const opened = defineModel({
   type : Boolean,
@@ -66,10 +26,6 @@ const opened = defineModel({
 
 function close() {
   opened.value = false;
-}
-
-function handleTimestamp(format) {
-  head.value.timestamp = getTimestamp(format);
 }
 
 const jatsFilesHint = computed(() => {
@@ -102,27 +58,20 @@ async function handleGenerateXML() {
     const jmeta = metas[0]['journal'];
     issn.value = jmeta?.eissn || jmeta?.issn;
   }
-  const xml = generateCrossrefXML(head.value, metas);
+  const xml = generateDoajXML(metas);
   xmlString.value = new XMLSerializer().serializeToString(xml);
   xmlIsBeingGenerated.value = false;
 }
 
 const canGenerateXML = computed(() => {
-  return (
-    head.value.timestamp && 
-    head.value.depositor_name && 
-    head.value.email_address && 
-    head.value.registrant &&
-    (head.value.epublication_date || head.value.publication_date) &&
-    jatsFiles.value?.length
-  );
+  return jatsFiles.value?.length;
 });
 
 const generateXMLButtonText = computed(() => {
   if (!canGenerateXML.value) {
-    return 'Введите обязательные значения, даты, и выберите JATS XML файлы';
+    return 'Выберите JATS XML файлы';
   } else {
-    return 'Сгенерировать Crossref XML';
+    return 'Сгенерировать DOAJ XML';
   }
 });
 
@@ -136,7 +85,7 @@ const handlePreviewXML = async () => {
 };
 
 const previewXMLButtonText = computed(() => {
-  return `${xmlPreviewOpen.value ? 'Скрыть' : 'Показать'} Crossref XML`;
+  return `${xmlPreviewOpen.value ? 'Скрыть' : 'Показать'} DOAJ XML`;
 });
 
 async function handleDownloadXML() {
@@ -145,7 +94,8 @@ async function handleDownloadXML() {
   const link = document.createElement('a');
   link.href = url;
   const filenamePrefix = issn.value || '';
-  link.download = `Crossref_${filenamePrefix}_${head.value.timestamp}.xml`; // .replaceAll(/[<>:"\/\\\|\?\*]/g, '')
+  const timestamp = getTimestamp('YYYYMMDDHHMMSS');
+  link.download = `DOAJ_${filenamePrefix}_${timestamp}.xml`; // .replaceAll(/[<>:"\/\\\|\?\*]/g, '')
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
@@ -162,42 +112,21 @@ async function handleDownloadXML() {
             <span>{{ helpOpen ? 'Скрыть' : 'Развернуть' }} пояснения</span>
             <i>{{ helpOpen ? 'remove' : 'add' }}</i>
           </button>
-          <h5>Crossref XML</h5>
+          <h5>DOAJ XML</h5>
           <button @click="close">
             <i>close</i>
             <span>Закрыть</span>
           </button>
         </div>
 
-        <article v-if="helpOpen" v-html="renderedHelpCrossref">
+        <article v-if="helpOpen">
+          <p>Для генерации DOAJ XML необходимо загрузить ранее созданные файлы JATS XML, а затем нажать кнопку <strong>Сгенерировать DOAJ XML</strong>. Получившийся файл можно просмотреть, скачать и загрузить в DOAJ.</p>
+          <p>Для конвертации в DOAJ XML можно выбирать JATS XML, принадлежащие к разным выпускам журнала.</p>
+          <p>В DOAJ XML экспортируются только англоязычные метаданные.</p>
         </article>
 
-        <div class="timestamp-wrapper">
-          <TextInput caption="timestamp *" pattern="\d+" v-model="head.timestamp" />
-          <button class="border small-round vertical small-elevate primary-border primary-text" @click="handleTimestamp('UNIX')">UNIX TIME</button>
-          <button class="border small-round vertical small-elevate primary-border primary-text" @click="handleTimestamp('YYYYMMDDHHMM')">YYYYMMDDHHMM</button>
-          <button class="border small-round vertical small-elevate primary-border primary-text" @click="handleTimestamp('YYYYMMDDHHMMSS')">YYYYMMDDHHMMSS</button>
-        </div>
-        <div class="two-inputs-wrapper">
-          <TextInput caption="depositor_name *" v-model="head.depositor_name" />
-          <TextInput caption="email_address *" pattern="[^\s]+@[^\s]+\.[^\s]+" v-model="head.email_address" />
-        </div>
-        <TextInput caption="registrant *" v-model="head.registrant" />
-        <div class="two-inputs-wrapper">
-          <TextInput 
-            caption="Дата публикации выпуска (online)" 
-            hint="YYYY-MM-DD, YYYY-MM или YYYY" 
-            pattern="\d{4}(-(0[1-9]|1[0-2])(-(0[1-9]|[12]\d|3[01]))?)?" 
-            v-model="head.epublication_date" />
-          <TextInput 
-            caption="Дата публикации выпуска (print)" 
-            hint="YYYY-MM-DD, YYYY-MM или YYYY" 
-            pattern="\d{4}(-(0[1-9]|1[0-2])(-(0[1-9]|[12]\d|3[01]))?)?" 
-            v-model="head.publication_date" />
-        </div>
-
         <div
-          class="field label prefix suffix border extra top-margin">
+          class="field label prefix suffix border extra jats-file-selector">
           <i>attach_file</i>
           <input type="file" multiple accept="application/xml" @change="handleSelectFiles">
           <input type="text">
@@ -209,7 +138,7 @@ async function handleDownloadXML() {
         <div class="buttons-wrapper">
           <template v-if="xmlString">
             <button class="border small-round vertical small-elevate primary-border primary-text" @click="handleDownloadXML">
-              Скачать Crossref XML
+              Скачать DOAJ XML
             </button>
             <button class="border small-round vertical small-elevate primary-border primary-text" @click="handlePreviewXML" :disabled="xmlPreviewIsBeingGenerated">
               {{ previewXMLButtonText }}
@@ -224,9 +153,6 @@ async function handleDownloadXML() {
 
         <HighlightedXML v-if="xmlPreviewOpen" :xmlString="xmlString" validatorUrl="" @ready="() => {xmlPreviewIsBeingGenerated = false}" />
 
-        <div class="top-margin">
-          Валидатор Crossref: <a class="link underline" target="_blank" href="https://www.crossref.org/02publishers/parser.html">https://www.crossref.org/02publishers/parser.html</a>
-        </div>
       </div>
     </div>
   </dialog>
@@ -249,21 +175,14 @@ async function handleDownloadXML() {
     margin-block-start: 0 !important;
   }
 
-  .timestamp-wrapper, 
-  .two-inputs-wrapper,
+  .jats-file-selector {
+    margin-block-start: 2rem !important;
+  }
+
   .buttons-wrapper {
     display: flex;
     gap: 0.5rem;
     margin-top: 1rem;
     align-items: center;
-  }
-
-  .two-inputs-wrapper > * {
-    margin-block-start: 0 !important;
-    flex-grow: 1;
-  }
-
-  .timestamp-wrapper :first-child {
-    flex-grow: 1;
   }
 </style>

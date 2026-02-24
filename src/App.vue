@@ -5,16 +5,17 @@ import OJSFetcher from "./components/OJSFetcher.vue";
 import ArticleWrapper from "./components/ArticleWrapper.vue";
 import Help from "./components/Help.vue";
 import Crossref from "./components/Crossref.vue";
+import Doaj from "./components/Doaj.vue";
 import { environment } from './components/store.js';
 import { genJournalMeta, genArticleMeta } from "./components/metadataTemplates.js";
-import parseXML from './components/parseXML.js';
-import generateXML from "./components/generateXML.js";
+import parseJatsXML from './components/parseJatsXML.js';
+import generateJatsXML from "./components/generateJatsXML.js";
 
 const journalMeta = ref(genJournalMeta());
 const articleMeta = ref(genArticleMeta());
 
 const xml = computed(() => {
-  return generateXML(journalMeta.value, articleMeta.value);
+  return generateJatsXML(journalMeta.value, articleMeta.value);
 });
 
 const xmlString = computed(() => {
@@ -31,6 +32,7 @@ const submissionId = ref('');
 
 const helpOpened = ref(false);
 const crossrefOpened = ref(false);
+const doajOpened = ref(false);
 
 onMounted(() => {
   environment.update();
@@ -81,6 +83,10 @@ function openCrossref() {
   crossrefOpened.value = true;
 }
 
+function openDoaj() {
+  doajOpened.value = true;
+}
+
 const xmlFileInput = ref(null);
 
 const uploadXml = () => {
@@ -93,7 +99,7 @@ const onXmlFileSelected = (e) => {
   const reader = new FileReader();
   reader.onload = (e) => {
     try {
-      const { journal, article } = parseXML(e.target.result);
+      const { journal, article } = parseJatsXML(e.target.result);
       Object.assign(journalMeta.value, {...genJournalMeta(), ...journal});
       Object.assign(articleMeta.value, {...genArticleMeta(), ...article});
     } catch (error) {
@@ -184,6 +190,12 @@ async function downloadXml() {
           <span>Crossref</span>
         </button>
       </li>
+      <li>
+        <button class="fill" @click="openDoaj">
+          <i>library_books</i>
+          <span>DOAJ</span>
+        </button>
+      </li>
       <li class="top-margin">
         <button class="fill" @click="openHelp">
           <i>help</i>
@@ -192,8 +204,9 @@ async function downloadXml() {
       </li>
     </menu>
   </div>
-  <Help v-model="helpOpened" />
   <Crossref v-model="crossrefOpened" />
+  <Doaj v-model="doajOpened" />
+  <Help v-model="helpOpened" />
 </template>
 
 <style scoped>

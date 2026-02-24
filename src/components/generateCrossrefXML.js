@@ -89,7 +89,6 @@ export default function generateCrossrefXML(heads, metas) {
     const jmeta = meta['journal'];
     const journal = xml.createElementNS(ns, 'journal');
     body.appendChild(journal);
-    const article_parent = journal;
     const journal_metadata = xml.createElementNS(ns, 'journal_metadata');
     journal.appendChild(journal_metadata);
       const full_title = xml.createElementNS(ns, 'full_title'); // *
@@ -101,11 +100,10 @@ export default function generateCrossrefXML(heads, metas) {
         eissn.textContent = jmeta.eissn;
       }
       let issn = null;
-      const issnText = jmeta.issn;
-      if (issnText) {
+      if (jmeta.issn) {
         issn = xml.createElementNS(ns, 'issn');
         issn.setAttribute('media_type', 'print');
-        issn.textContent = issnText;
+        issn.textContent = jmeta.issn;
       }
       for (const child of [full_title, eissn, issn]) {
         if (child) {
@@ -137,7 +135,7 @@ export default function generateCrossrefXML(heads, metas) {
       }
 
 		const journal_article = xml.createElementNS(ns, 'journal_article');
-		article_parent.appendChild(journal_article);
+		journal.appendChild(journal_article);
 		journal_article.setAttribute('publication_type', 'full_text');
 		journal_article.setAttribute('reference_distribution_opts', 'any');
 			const titles = xml.createElementNS(ns, 'titles'); // *
@@ -184,10 +182,7 @@ export default function generateCrossrefXML(heads, metas) {
       // at least one publication date is required for the article as well
 			const epublication_date_article = makePublicationDate(ameta.datePublished, 'online'); // *
 			const publication_date_article = makePublicationDate(heads['publication_date'], 'print');
-      let acceptance_date = null;
-      if (ameta.dateAccepted) {
-        acceptance_date = makePublicationDate(ameta.dateAccepted, 'online', 'acceptance');
-      }
+      const acceptance_date = makePublicationDate(ameta.dateAccepted, 'online', 'acceptance');
       let pages = null;
       if (ameta.pages) {
         if (!ameta.useElocationId) {
@@ -205,7 +200,7 @@ export default function generateCrossrefXML(heads, metas) {
           pages = xml.createElementNS(ns, 'publisher_item');
           const item_number = xml.createElementNS(ns, 'item_number');
           item_number.setAttribute('item_number_type', 'article_number');
-          item_number.textContent = ameta.pages
+          item_number.textContent = ameta.pages;
           pages.appendChild(item_number);
         }
       }
@@ -278,13 +273,22 @@ export default function generateCrossrefXML(heads, metas) {
           citation.appendChild(unstructured_citation);
 				}
 			}
-			for (const child of [titles, contributors, abstract, epublication_date_article, publication_date_article, acceptance_date, pages, fr_program, ai_program, doi_data]) {
+			for (const child of [
+                            titles, 
+                            contributors, 
+                            abstract, 
+                            epublication_date_article, 
+                            publication_date_article, 
+                            acceptance_date, 
+                            pages, 
+                            fr_program, 
+                            ai_program, 
+                            doi_data, 
+                            citation_list
+                          ]) {
 				if (child) {
 					journal_article.appendChild(child);
 				}
-			}
-			if (citation_list) {
-				journal_article.appendChild(citation_list);
 			}
 	} //for (const meta of metas)
 	return xml;

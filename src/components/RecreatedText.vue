@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue';
-import { parseXMLDOM } from './parseXML';
+import { parseJatsXMLDOM } from './parseJatsXML';
 
 const orcidIcon = './img/ORCID-iD_icon_unauth_vector.svg';
 
@@ -11,7 +11,7 @@ const props = defineProps({
   },
 });
 
-const meta = computed(() => parseXMLDOM(props.xml)?.article);
+const meta = computed(() => parseJatsXMLDOM(props.xml)?.article);
 
 function getFullname(author, lang) {
   const givennames = author.val.givennames[lang];

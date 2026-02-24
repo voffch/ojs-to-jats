@@ -1,12 +1,12 @@
 import { genJournalMeta, genArticleMeta, genAuthorMeta, addAuthor } from "./metadataTemplates";
 
-export default function parseXML(xmlString) {
+export default function parseJatsXML(xmlString) {
   const parser = new DOMParser();
   const xml = parser.parseFromString(xmlString, "application/xml");
-  return parseXMLDOM(xml);
+  return parseJatsXMLDOM(xml);
 }
 
-export function parseXMLDOM(xml) {
+export function parseJatsXMLDOM(xml) {
   const getText = (selector, root=xml) => root.querySelector(selector)?.textContent.trim() ?? '';
   const translateSelector = (selector, lang) => `${selector}:lang(${lang})`; // e.g., `${selector}:lang(en)`
   const translateMultipleSelectors = (selectors, lang) => {

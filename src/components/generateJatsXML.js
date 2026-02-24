@@ -21,7 +21,7 @@ function createXmlWrapper(articleType, lang) {
 	return xml;
 }
 
-export default function generateXML(jmeta, ameta) {
+export default function generateJatsXML(jmeta, ameta) {
 	const xml = createXmlWrapper(ameta.articleType, ameta.primaryLanguage);
   const a = xml.getElementsByTagName('article')[0];
 	const ns = a.namespaceURI;
