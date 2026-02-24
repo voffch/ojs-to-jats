@@ -9,8 +9,7 @@ function createXmlWrapper() {
 			xmlns:ai="http://www.crossref.org/AccessIndicators.xsd"
       xmlns:fr="http://www.crossref.org/fundref.xsd"
 			version="4.4.2"
-			xsi:schemaLocation="http://www.crossref.org/schema/4.4.2 https://www.crossref.org/schemas/crossref4.4.2.xsd">
-		</doi_batch>`, "application/xml");
+			xsi:schemaLocation="http://www.crossref.org/schema/4.4.2 https://www.crossref.org/schemas/crossref4.4.2.xsd"></doi_batch>`, "application/xml");
 	return xml;
 }
 
@@ -204,6 +203,7 @@ export default function generateCrossrefXML(heads, metas) {
           pages.appendChild(item_number);
         }
       }
+      // https://www.crossref.org/documentation/schema-library/markup-guide-metadata-segments/funding-information
       // it's probably not strictly correct to include everything within funder_name
       // but one can nevertheless try
       let fr_program = null;

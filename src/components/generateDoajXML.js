@@ -5,8 +5,7 @@ function createXmlWrapper() {
 	const xml  = parser.parseFromString(`<?xml version="1.0" encoding="utf-8"?>
 		<records
 			xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-			xsi:noNamespaceSchemaLocation="http://doaj.org/static/doaj/doajArticles.xsd" >
-		</records>`, "application/xml");
+			xsi:noNamespaceSchemaLocation="http://doaj.org/static/doaj/doajArticles.xsd"></records>`, "application/xml");
 	return xml;
 }
 
