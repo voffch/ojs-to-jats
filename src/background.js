@@ -22,15 +22,15 @@ chrome.action.onClicked.addListener(async (tab) => {
     const granted = await chrome.permissions.request({
       origins: [matchPattern]
     });
-
     if (granted) {
       console.log("Access granted to:", matchPattern);
-      chrome.tabs.create({url: "/index.html"});
-      callingUrl = tab.url;
     } else {
-      console.log("Access denied to:", matchPattern);
+      console.warn("Access denied to:", matchPattern);
     }
   } catch (error) {
-    console.error("Permission request failed:", error);
+    console.error(`Permission request to ${matchPattern} failed:`, error);
+  } finally {
+    callingUrl = tab.url;
+    chrome.tabs.create({url: "/index.html"});
   }
 });
