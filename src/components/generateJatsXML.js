@@ -332,33 +332,23 @@ export default function generateJatsXML(jmeta, ameta) {
   }
   if (ameta.citations.en || ameta.citations.ru) {
     const refList = xml.createElementNS(ns, 'ref-list');
-    const lines = Object.fromEntries(
-      Object.entries(ameta.citations).map(([lang, str]) => [lang, str.split(/\r?\n|\r/).filter(line => line.trim() !== "")])
-    );
-    const mostLinesLang = Object.keys(lines).reduce((prev, curr) => 
-      lines[prev].length > lines[curr].length ? prev : curr
-    );
-    const otherLang = mostLinesLang === 'en' ? 'ru' : 'en';
-    lines[mostLinesLang].forEach((line, index) => {
-      const ref = xml.createElementNS(ns, 'ref');
-      ref.setAttribute('id', `ref${index + 1}`);
-      const label = xml.createElementNS(ns, 'label');
-      label.textContent = `${index + 1}`;
-      ref.appendChild(label);
-      const citationAlternatives = xml.createElementNS(ns, 'citation-alternatives');
-      const mixedCitation = xml.createElementNS(ns, 'mixed-citation');
-      mixedCitation.setAttributeNS(xmlns, 'lang', mostLinesLang);
-      mixedCitation.textContent = line.replace(/(^\[?\d+[\.\)\:\]]?\s*)/i, ''); // removing numeration here
-      citationAlternatives.appendChild(mixedCitation);
-      if (index < lines[otherLang].length) {
-        const mixedCitation = xml.createElementNS(ns, 'mixed-citation');
-        mixedCitation.setAttributeNS(xmlns, 'lang', otherLang);
-        mixedCitation.textContent = lines[otherLang][index];
-        citationAlternatives.appendChild(mixedCitation);
+    for (const lang in ameta.citations) {
+      if (ameta.citations[lang]) {
+        const lines = ameta.citations[lang].split(/\r?\n|\r/).filter(line => line.trim() !== "");
+        lines.forEach((line, index) => {
+          const ref = xml.createElementNS(ns, 'ref');
+          ref.setAttribute('id', `${lang}-ref${index + 1}`);
+          const label = xml.createElementNS(ns, 'label');
+          label.textContent = `${index + 1}`;
+          ref.appendChild(label);
+          const mixedCitation = xml.createElementNS(ns, 'mixed-citation');
+          mixedCitation.setAttributeNS(xmlns, 'lang', lang);
+          mixedCitation.textContent = line.replace(/(^\[?\d+[\.\)\:\]]?\s*)/i, ''); // removing numeration here
+          ref.appendChild(mixedCitation);
+          refList.appendChild(ref);
+        });
       }
-      ref.appendChild(citationAlternatives);
-      refList.appendChild(ref);
-    });
+    }
     back.appendChild(refList);
   }
   return xml;
