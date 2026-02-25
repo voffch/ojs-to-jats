@@ -119,7 +119,7 @@ function makeXmlFilename() {
     articleMeta.value.pages,
     articleMeta.value.datePublished,
   ];
-  return parts.filter(Boolean).join('_').replaceAll(/[<>:"\/\\\|\?\*]/g, '');
+  return parts.filter(Boolean).join('_').replaceAll(/[<>:"\/\\\|\?\*]/g, '') + '.xml';
 }
 
 async function downloadXml() {
