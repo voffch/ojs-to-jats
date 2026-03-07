@@ -19,24 +19,21 @@ export default function generateDoajXML(metas) {
     const record = xml.createElementNS(ns, 'record');
     records.appendChild(record);
     let language = null;
-    // the meaning is unclear - is it the language of the metadata?
-    // language = xml.createElementNS(ns, 'language');
-    // language.textContent = 'eng';
-    // ...or the language of the article?
-    // if (ameta.primaryLanguage) {
-    //   language = xml.createElementNS(ns, 'language');
-    //   switch(ameta.primaryLanguage) {
-    //     case 'ru':
-    //       language.textContent = 'rus';
-    //       break;
-    //     case 'en':
-    //       language.textContent = 'eng';
-    //       break;
-    //     default:
-    //       language = null;
-    //       break;
-    //   }
-    // }
+    // the language of the article
+    if (ameta.primaryLanguage) {
+      language = xml.createElementNS(ns, 'language');
+      switch(ameta.primaryLanguage) {
+        case 'ru':
+          language.textContent = 'rus';
+          break;
+        case 'en':
+          language.textContent = 'eng';
+          break;
+        default:
+          language = null;
+          break;
+      }
+    }
     let publisher = null;
     if (jmeta.publishers.en) {
       publisher = xml.createElementNS(ns, 'publisher');
