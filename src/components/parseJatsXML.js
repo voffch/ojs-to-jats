@@ -41,8 +41,8 @@ export function parseJatsXMLDOM(xml) {
   const jmeta = {
     ...genJournalMeta(),
     titles : getBilingualText(['journal-title', 'journal-meta trans-title']),
-    issn : getText('issn[publication-format="print"]'),
-    eissn : getText('issn[publication-format="electronic"]'),
+    issn : getText('issn[publication-format="print"], issn[pub-type="ppub"], journal-id[journal-id-type="issn"]'),
+    eissn : getText('issn[publication-format="electronic"], issn[pub-type="epub"], journal-id[journal-id-type="eissn"]'),
     publishers : getBilingualText('publisher-name')
   }
   const ameta = {
@@ -51,7 +51,7 @@ export function parseJatsXMLDOM(xml) {
     articleType : getAttr('article', 'article-type'),
     doi : getText('article-id[pub-id-type="doi"]'),
     edn : getText('article-id[pub-id-type="edn"]'),
-    pageUrl : getAttrNS('self-uri[content-type="html"]', xlinkns, 'href'),
+    pageUrl : getAttrNS('self-uri[content-type="html"], self-uri:not([content-type])', xlinkns, 'href'),
     pdfUrl : getAttrNS('self-uri[content-type="pdf"]', xlinkns, 'href'),
     titles : getBilingualText(['article-title', 'article-meta trans-title']),
     abstracts : getBilingualText(['abstract', 'trans-abstract']),
@@ -73,6 +73,24 @@ export function parseJatsXMLDOM(xml) {
     acknowledgments : getBilingualText('ack'),
     fundings : getBilingualText('funding-statement'),
     citations : getMultipleBilingualTexts('mixed-citation', '\n')
+  }
+  // datePublished: try constructing piece-by-piece if no iso-8601-date attr (e.g., elpub)
+  if (!ameta.datePublished) {
+    const pubDate = xml.querySelector('pub-date[date-type*="pub"], pub-date[pub-type*="pub"]');
+    if (pubDate) {
+      const dateParts = ['year', 'month', 'day'].map(x => pubDate.querySelector(x)?.textContent ?? '');
+      let date = '';
+      for (const part of dateParts) {
+        if (part) {
+          date = date ? `${date}-${part}` : part;
+        } else {
+          break;
+        }
+      }
+      if (date) {
+        ameta.datePublished = date;
+      }
+    }
   }
   // elocation-id and pages
   const elocationId = getText('elocation-id');
@@ -100,13 +118,14 @@ export function parseJatsXMLDOM(xml) {
     } else {
       throw new Error('Incorrect affiliation ID');
     }
-    ameta.affiliations.push({
+    const aff = {
       id: id,
-      val: {
-        en: aa.querySelector(translateSelector('institution', 'en'))?.textContent.trim() ?? '',
-        ru: aa.querySelector(translateSelector('institution', 'ru'))?.textContent.trim() ?? ''
-      }
-    });
+      val: getBilingualText('institution', aa)
+    };
+    if (!(aff.val.en || aff.val.ru)) { // try getting the value of aff directly (e.g., elpub)
+      aff.val = getBilingualText('aff', aa);
+    }
+    ameta.affiliations.push(aff);
   });
   const authors = Array.from(xml.querySelectorAll('contrib')).map((contrib) => {
     const affIds = Array.from(contrib.querySelectorAll(`xref[ref-type="aff"]`)).map((xref) => {
