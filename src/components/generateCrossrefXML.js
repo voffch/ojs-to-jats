@@ -254,10 +254,11 @@ export default function generateCrossrefXML(heads, metas) {
 					}
 				}
 			let citation_list = null;
-			if (ameta.citations.en) {
+      const citationsText = ameta.citations.en ? ameta.citations.en : ameta.citations.ru;
+			if (citationsText) {
 				const doi_re = /(10[.][0-9]{4,}(?:[.][0-9]+)*\/\S*[^\s\.]{1})/i;
 				citation_list = xml.createElementNS(ns, 'citation_list');
-				const citationParts = ameta.citations.en.split(/\r?\n|\r/);
+				const citationParts = citationsText.split(/\r?\n|\r/);
 				for (let [index, ref] of citationParts.entries()) {
 					const citation = xml.createElementNS(ns, 'citation');
 					citation_list.appendChild(citation);

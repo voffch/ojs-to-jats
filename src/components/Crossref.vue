@@ -176,7 +176,7 @@ async function handleDownloadXML() {
           <TextInput caption="timestamp *" pattern="\d+" v-model="head.timestamp" />
           <button class="border small-round vertical small-elevate primary-border primary-text" @click="handleTimestamp('UNIX')">UNIX TIME</button>
           <button class="border small-round vertical small-elevate primary-border primary-text" @click="handleTimestamp('YYYYMMDDHHMM')">YYYYMMDDHHMM</button>
-          <button class="border small-round vertical small-elevate primary-border primary-text" @click="handleTimestamp('YYYYMMDDHHMMSS')">YYYYMMDDHHMMSS</button>
+          <button class="border small-round vertical small-elevate primary-border primary-text" @click="handleTimestamp('YYYYMMDDHHMMSSsss')">YYYYMMDDHHMMSSsss</button>
         </div>
         <div class="two-inputs-wrapper">
           <TextInput caption="depositor_name *" v-model="head.depositor_name" />
