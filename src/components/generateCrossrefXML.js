@@ -203,18 +203,6 @@ export default function generateCrossrefXML(heads, metas) {
           pages.appendChild(item_number);
         }
       }
-      // https://www.crossref.org/documentation/schema-library/markup-guide-metadata-segments/funding-information
-      // it's probably not strictly correct to include everything within funder_name
-      // but one can nevertheless try
-      let fr_program = null;
-      if (ameta.fundings.en) {
-        fr_program = xml.createElementNS(fr, 'program');
-        fr_program.setAttribute('name', 'fundref');
-        const assertion = xml.createElementNS(fr, 'assertion');
-        assertion.setAttribute('name', 'funder_name');
-        assertion.textContent = ameta.fundings.en;
-        fr_program.appendChild(assertion);
-      }
       let ai_program = null;
       if (ameta.licenseUrl) {
         ai_program = xml.createElementNS(ai, 'program');
@@ -282,7 +270,6 @@ export default function generateCrossrefXML(heads, metas) {
                             publication_date_article, 
                             acceptance_date, 
                             pages, 
-                            fr_program, 
                             ai_program, 
                             doi_data, 
                             citation_list
