@@ -110,7 +110,7 @@ const onXmlFileSelected = (e) => {
   e.target.value = '';
 }
 
-function makeXmlFilename() {
+const jatsXmlFilename = computed(() => {
   const parts = [
     'JATS',
     (journalMeta.value.eissn ? journalMeta.value.eissn : journalMeta.value.issn),
@@ -120,14 +120,14 @@ function makeXmlFilename() {
     articleMeta.value.datePublished,
   ];
   return parts.filter(Boolean).join('_').replaceAll(/[<>:"\/\\\|\?\*]/g, '') + '.xml';
-}
+});
 
 async function downloadXml() {
   const blob = new Blob([xmlString.value], { type: 'text/xml' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = makeXmlFilename();
+  link.download = jatsXmlFilename.value;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
@@ -207,6 +207,8 @@ async function downloadXml() {
   <Crossref v-model="crossrefOpened" />
   <Doaj v-model="doajOpened" />
   <Help v-model="helpOpened" />
+
+  <footer>Имя файла (формируется автоматически): {{ jatsXmlFilename }}</footer>
 </template>
 
 <style scoped>
@@ -216,5 +218,11 @@ async function downloadXml() {
     right: 1rem;
     opacity: 0.75;
     z-index: 99;
+  }
+  footer {
+    min-block-size: unset;
+    font-size: smaller;
+    text-align: center;
+    margin-top: 0.5rem;
   }
 </style>
