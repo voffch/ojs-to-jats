@@ -61,6 +61,10 @@ watch(baseUrl, (newUrl, oldUrl) => {
   }
 });
 
+function handleMenuButtonHover(e) {
+  e.target.focus();
+}
+
 function scrollToTop() {
   window.scrollTo({
     top: 0,
@@ -149,7 +153,7 @@ async function downloadXml() {
     :xmlString="xmlString" />
 
   <div class="nav-menu">
-    <button class="small circle">
+    <button class="small circle" @mouseenter="handleMenuButtonHover">
       <i>menu</i>
     </button>
     <menu class="bottom transparent no-wrap left right-align">
