@@ -4,7 +4,7 @@ import TextInput from './controls/TextInput.vue';
 import HighlightedXML from './HighlightedXML.vue';
 import generateCrossrefXML from './generateCrossrefXML.js';
 import parseJatsXML from './parseJatsXML.js';
-import getTimestamp from './timestamp.js';
+import { getTimestamp } from './timestamp.js';
 
 import markdownit from 'markdown-it';
 const md = markdownit();

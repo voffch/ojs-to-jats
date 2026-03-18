@@ -343,7 +343,7 @@ export default function generateJatsXML(jmeta, ameta) {
           ref.appendChild(label);
           const mixedCitation = xml.createElementNS(ns, 'mixed-citation');
           mixedCitation.setAttributeNS(xmlns, 'lang', lang);
-          mixedCitation.textContent = line.replace(/(^\[?\d+[\.\)\:\]]\s*)/i, ''); // removing numeration here
+          mixedCitation.textContent = line.replace(/(^\[?\d+(?:[\)\:\]]\s*|\.(?!\d)\s*))/i, ''); // removing numeration here
           ref.appendChild(mixedCitation);
           refList.appendChild(ref);
         });

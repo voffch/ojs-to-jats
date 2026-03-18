@@ -1,4 +1,11 @@
-export default function getTimestamp(format) {
+const timestampFormats = [
+  'UNIX',
+  'YYYYMMDDHHMM',
+  'YYYYMMDDHHMMSS',
+  'YYYYMMDDHHMMSSsss'
+];
+
+export function getTimestamp(format) {
   let timestamp;
   const date = new Date();
   if (format === 'UNIX') {
@@ -21,4 +28,15 @@ export default function getTimestamp(format) {
     }
   }
   return timestamp;
+}
+
+export function determineTimestampFormat(previousTimestamp) {
+  const previousTimestampInt = parseInt(previousTimestamp);
+  for (const format of timestampFormats) {
+    const currentTimestampInt = parseInt(getTimestamp(format));
+    if (currentTimestampInt > previousTimestampInt) {
+      return format;
+    }
+  }
+  return null;
 }

@@ -226,6 +226,7 @@ export default function generateCrossrefXML(heads, metas) {
 						item_crawler.setAttribute('crawler', 'iParadigms');
 							const resource_crawler = xml.createElementNS(ns, 'resource');
 							item_crawler.appendChild(resource_crawler);
+              resource_crawler.setAttribute('mime_type', 'application/pdf');
 							resource_crawler.textContent = ameta.pdfUrl;
 					collection_mining = xml.createElementNS(ns, 'collection');
 					collection_mining.setAttribute('property', 'text-mining');

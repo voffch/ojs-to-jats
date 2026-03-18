@@ -3,7 +3,7 @@ import { ref, computed, watch } from 'vue';
 import HighlightedXML from './HighlightedXML.vue';
 import generateDoajXML from './generateDoajXML';
 import parseJatsXML from './parseJatsXML';
-import getTimestamp from './timestamp.js';
+import { getTimestamp } from './timestamp.js';
 
 const xmlString = ref('');
 const helpOpen = ref(false);
