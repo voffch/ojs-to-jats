@@ -1,3 +1,5 @@
+// https://community.crossref.org/t/what-is-time-stamping-error-and-how-to-fix-it/932
+
 const timestampFormats = [
   'UNIX',
   'YYYYMMDDHHMM',
