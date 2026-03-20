@@ -76,3 +76,7 @@ input:placeholder-shown,
 textarea:placeholder-shown {
   box-shadow: 0 0 2px 2px var(--tertiary-container) inset;
 }
+
+.field > textarea:not([rows]) {
+  max-block-size: 36rem;
+}
