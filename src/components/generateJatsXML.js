@@ -22,6 +22,47 @@ function createXmlWrapper(articleType, lang) {
 }
 
 export default function generateJatsXML(jmeta, ameta) {
+	function makeDate(dateElementName, dateText, attrs={}) {
+    if ((!dateElementName) || (!dateText)) return null;
+		const date = xml.createElementNS(ns, dateElementName);
+    for (const [name, value] of Object.entries(attrs)) {
+      date.setAttribute(name, value);
+    }
+		date.setAttribute('iso-8601-date', dateText);
+    const dateParts = dateText.split('-');
+    let day = null;
+    let month = null;
+    let year = null;
+    switch(dateParts.length) {
+      case 1:
+        year = xml.createElementNS(ns, 'year');
+        year.textContent = dateParts[0];
+        break;
+      case 2:
+        month = xml.createElementNS(ns, 'month');
+        month.textContent = dateParts[1];
+        year = xml.createElementNS(ns, 'year');
+        year.textContent = dateParts[0];
+        break;
+      case 3:
+        day = xml.createElementNS(ns, 'day');
+        day.textContent = dateParts[2];
+        month = xml.createElementNS(ns, 'month');
+        month.textContent = dateParts[1];
+        year = xml.createElementNS(ns, 'year');
+        year.textContent = dateParts[0];
+        break;
+      default:
+        break;
+    }
+    for (const child of [day, month, year]) {
+      if (child !== null) {
+        date.appendChild(child);
+      }
+    }
+    return date;
+	}
+
 	const xml = createXmlWrapper(ameta.articleType, ameta.primaryLanguage);
   const a = xml.getElementsByTagName('article')[0];
 	const ns = a.namespaceURI;
@@ -166,12 +207,16 @@ export default function generateJatsXML(jmeta, ameta) {
       articleMeta.appendChild(affAlternatives);
     }
   }
-  if (ameta.datePublished) {
-    const pubDate = xml.createElementNS(ns, 'pub-date');
-    pubDate.setAttribute('date-type', 'pub');
-    pubDate.setAttribute('iso-8601-date', ameta.datePublished);
-    pubDate.setAttribute('publication-format', 'electronic');
+  if (ameta.datePublished || ameta.dateIssuePublished) { // with dirty fallbacks
+    const pubDate = makeDate('pub-date', ameta.datePublished || ameta.dateIssuePublished, {
+      'date-type': 'pub',
+      'publication-format': 'electronic'
+    });
     articleMeta.appendChild(pubDate);
+    const issuePubDate = makeDate('pub-date', ameta.dateIssuePublished || ameta.datePublished, {
+      'date-type': 'collection'
+    });
+    articleMeta.appendChild(issuePubDate);
   } else {
     articleMeta.appendChild(xml.createElementNS(ns, 'pub-date-not-available'));
   }
@@ -205,17 +250,16 @@ export default function generateJatsXML(jmeta, ameta) {
   //history is deprecated, but metafora doesn't parse pub-history
   if (ameta.dateSubmitted || ameta.dateAccepted) {
     const history = xml.createElementNS(ns, 'history');
-    if (ameta.dateSubmitted) {
-      const date = xml.createElementNS(ns, 'date');
-      date.setAttribute('date-type', 'received');
-      date.setAttribute('iso-8601-date', ameta.dateSubmitted);
-      history.appendChild(date);
-    }
-    if (ameta.dateAccepted) {
-      const date = xml.createElementNS(ns, 'date');
-      date.setAttribute('date-type', 'accepted');
-      date.setAttribute('iso-8601-date', ameta.dateAccepted);
-      history.appendChild(date);
+    const dateSubmitted = makeDate('date', ameta.dateSubmitted, {
+      'date-type': 'received'
+    });
+    const dateAccepted = makeDate('date', ameta.dateAccepted, {
+      'date-type': 'accepted'
+    });
+    for (const child of [dateSubmitted, dateAccepted]) {
+      if (child) {
+        history.appendChild(child);
+      }
     }
     articleMeta.appendChild(history);
   }

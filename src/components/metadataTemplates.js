@@ -66,6 +66,7 @@ export function genArticleMeta() {
     dateSubmitted : '',
     dateAccepted : '',
     datePublished : '',
+    dateIssuePublished : '',
     volume : '',
     issue : '',
     useElocationId : false,

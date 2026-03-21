@@ -154,6 +154,10 @@ const handleToggle = (lang, e) => {
         <span v-if="meta.datePublished">{{ tr(lang, 'Опубликована ', 'Published ') + `${meta.datePublished}` }}</span>
         <span v-else class="warning">{{ tr(lang, 'нет даты опубликования', 'no "published" date') }}</span>
       </div>
+      <div class="dates">
+        <span v-if="meta.dateIssuePublished">{{ tr(lang, 'Дата выхода в свет (выпуска) ', 'Issue Published ') + `${meta.dateIssuePublished}` }}</span>
+        <span v-else class="warning">{{ tr(lang, 'нет даты выхода в свет (выпуска)', 'no issue publication date') }}</span>
+      </div>
       <div class="pub-data">
         <span v-if="meta.volume">{{ tr(lang, 'Том ', 'Vol. ') + meta.volume + ', ' }}</span>
         <span v-if="meta.issue">{{ tr(lang, 'Выпуск ', 'Issue ') + meta.issue + ', ' }}</span>

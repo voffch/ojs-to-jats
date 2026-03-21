@@ -54,6 +54,7 @@ function correctDates() {
   meta.value.dateSubmitted = tryCorrectingDate(meta.value.dateSubmitted);
   meta.value.dateAccepted = tryCorrectingDate(meta.value.dateAccepted);
   meta.value.datePublished = tryCorrectingDate(meta.value.datePublished);
+  meta.value.dateIssuePublished = tryCorrectingDate(meta.value.dateIssuePublished);
 }
 
 function removeNames(lang) {
@@ -71,6 +72,7 @@ function removeEmails() {
 
 const urlPattern = 'https?\:\/\/.+';
 const datePattern = '\\d{4}-[01]\\d-[0-3]\\d';
+const laxDatePattern = '\\d{4}(-[01]\\d(-[0-3]\\d)?)?';
 const doiPattern = '10\\.\\d{4,9}\\/.+'; // oversimplified to avoid errors
 </script>
 
@@ -187,7 +189,8 @@ const doiPattern = '10\\.\\d{4,9}\\/.+'; // oversimplified to avoid errors
     <h4 class="small">Публикационные данные</h4>
     <TextInput caption="Дата получения публикации" hint="в формате YYYY-MM-DD" :pattern="datePattern" :showOptions="gs.show" v-model="meta.dateSubmitted" />
     <TextInput caption="Дата принятия публикации" hint="в формате YYYY-MM-DD" :pattern="datePattern" :showOptions="gs.show" v-model="meta.dateAccepted" />
-    <TextInput caption="Дата публикации *" hint="в формате YYYY-MM-DD" :pattern="datePattern" :showOptions="gs.show" v-model="meta.datePublished" />
+    <TextInput caption="Дата публикации статьи *" hint="в формате YYYY-MM-DD" :pattern="datePattern" :showOptions="gs.show" v-model="meta.datePublished" />
+    <TextInput caption="Дата публикации выпуска" hint="необходимо заполнить, если отличается от даты публикации статьи" :pattern="laxDatePattern" :showOptions="gs.show" v-model="meta.dateIssuePublished" />
     <div class="modify-content-buttons">
       <button class="border small-round vertical small-elevate primary-border primary-text" @click="correctDates">Переписать даты DD.MM.YYYY как YYYY-MM-DD</button>
     </div>

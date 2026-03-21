@@ -38,6 +38,19 @@ export function parseJatsXMLDOM(xml) {
       ru: getMultipleTexts(translateMultipleSelectors(selector, 'ru'), delimiter)
     }
   };
+  const constructDateFromChildren = (pubDate) => {
+    const dateParts = ['year', 'month', 'day'].map(x => pubDate.querySelector(x)?.textContent ?? '');
+    let date = '';
+    for (const part of dateParts) {
+      if (part) {
+        date = date ? `${date}-${part}` : part;
+      } else {
+        break;
+      }
+    }
+    return date;
+  }
+
   const jmeta = {
     ...genJournalMeta(),
     titles : getBilingualText(['journal-title', 'journal-meta trans-title']),
@@ -65,7 +78,8 @@ export function parseJatsXMLDOM(xml) {
     copyrightYear : getText('copyright-year'),
     dateSubmitted : getAttr('date[date-type="received"]', 'iso-8601-date'),
     dateAccepted : getAttr('date[date-type="accepted"]', 'iso-8601-date'),
-    datePublished : getAttr('pub-date', 'iso-8601-date'),
+    datePublished : getAttr('pub-date[date-type*="pub"]', 'iso-8601-date'),
+    dateIssuePublished : getAttr('pub-date[date-type="collection"]', 'iso-8601-date'),
     volume : getText('volume'),
     issue : getText('issue'),
     // useElocationId : false,
@@ -74,23 +88,23 @@ export function parseJatsXMLDOM(xml) {
     fundings : getBilingualText('funding-statement'),
     citations : getMultipleBilingualTexts('mixed-citation', '\n')
   }
-  // datePublished: try constructing piece-by-piece if no iso-8601-date attr (e.g., elpub)
-  if (!ameta.datePublished) {
-    const pubDate = xml.querySelector('pub-date[date-type*="pub"], pub-date[pub-type*="pub"]');
-    if (pubDate) {
-      const dateParts = ['year', 'month', 'day'].map(x => pubDate.querySelector(x)?.textContent ?? '');
-      let date = '';
-      for (const part of dateParts) {
-        if (part) {
-          date = date ? `${date}-${part}` : part;
-        } else {
-          break;
+  // try constructing dates piece-by-piece if there's no iso-8601-date attr (e.g., elpub)
+  for (const [dateProp, selector] of Object.entries({
+    'datePublished': 'pub-date[date-type*="pub"], pub-date[pub-type*="pub"]',
+    'dateIssuePublished': 'pub-date[date-type="collection"]'
+  })) {
+    if (!ameta[dateProp]) {
+      const pubDate = xml.querySelector(selector);
+      if (pubDate) {
+        const date = constructDateFromChildren(pubDate);
+        if (date) {
+          ameta[dateProp] = date;
         }
       }
-      if (date) {
-        ameta.datePublished = date;
-      }
     }
+  }
+  if (!ameta.dateIssuePublished && ameta.datePublished) {
+    ameta.dateIssuePublished = ameta.datePublished; // a dirty fallback
   }
   // elocation-id and pages
   const elocationId = getText('elocation-id');

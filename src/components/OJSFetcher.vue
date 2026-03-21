@@ -427,6 +427,7 @@ function parseDublinCore(html, updateExisting=true) {
   } else {
     setArticleMeta('datePublished', 'DC.Date.issued');
   }
+  setArticleMeta('dateIssuePublished', 'DC.Date.issued');
   articleMeta.value.useElocationId = articleMeta.value.pages && !articleMeta.value.pages.includes('-');
   setBilingualArticleMeta('fundings', 'DC.Contributor.Sponsor'); // there may be several of them in OJS 3.5
   setBilingualArticleMeta('titles', 'DC.Title');
@@ -868,6 +869,7 @@ async function loadByApi() {
     articleMeta.value.licenseUrl = pub.licenseUrl;
     articleMeta.value.copyrightYear = pub.copyrightYear;//.toString();
     articleMeta.value.datePublished = pub.datePublished;
+    // articleMeta.value.dateIssuePublished = pub.datePublished;
     articleMeta.value.pages = pub.pages;
     articleMeta.value.useElocationId = articleMeta.value.pages && !articleMeta.value.pages.includes('-');
     articleMeta.value.fundings = {
