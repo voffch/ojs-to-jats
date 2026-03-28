@@ -34,6 +34,46 @@ const submissionId = defineModel('submissionId', {
 
 const updateJournalMeta = ref(false);
 const autoRemoveTags = ref(true);
+const autoDetectScript = ref(true);
+
+function fixWrongLanguages(ameta) {
+  function detectCyrillic(text) {
+    if (text?.length) {
+      const match = text.match(/\p{Script=Cyrillic}/gu);
+      return match ? 100 * match.length / text.length : 0;
+    } else {
+      return 0;
+    }
+  }
+  const threshold = 20;
+  function fixBilingualObject(obj) { // { en : '', ru : '' }
+    if (obj?.ru && obj?.en && (obj.ru === obj.en)) {
+      if (detectCyrillic(obj.ru) > threshold) {
+        obj.en = '';
+      } else {
+        obj.ru = '';
+      }
+    }
+  }
+  const fieldsToFix = [
+    'titles',
+    'abstracts',
+    'keywords',
+    'copyrightHolders',
+    'acknowledgments',
+    'fundings',
+  ];
+  for (const field of fieldsToFix) {
+    fixBilingualObject(ameta[field]);
+  }
+  for (const aff of ameta.affiliations) {
+    fixBilingualObject(aff.val);
+  }
+  for (const author of ameta.authors) {
+    fixBilingualObject(author.val.surnames);
+    fixBilingualObject(author.val.givennames);
+  }
+}
 
 watch(() => submissionId.value, (newNumber, oldNumber) => {
   if (newNumber !== oldNumber) {
@@ -131,6 +171,9 @@ async function loadPublication() {
         if (autoRemoveTags.value) {
           removeHtmlFromTitlesAbstracts(articleMeta.value);
           removeHtmlFromCitations(articleMeta.value);
+        }
+        if (autoDetectScript.value) {
+          fixWrongLanguages(articleMeta.value);
         }
       } catch(e) {
         logError(e.message);
@@ -923,6 +966,10 @@ const loadButtonText = computed(() => {
             <input type="checkbox" id="auto-clean-tags" v-model="autoRemoveTags" />
             <span>Чистить &lt;тэги&gt;</span>
           </label>
+          <label class="checkbox" for="auto-detect-script">
+            <input type="checkbox" id="auto-detect-script" v-model="autoDetectScript" />
+            <span>Определять язык</span>
+          </label>
         </nav>
       </fieldset>
     </div>
@@ -950,6 +997,7 @@ const loadButtonText = computed(() => {
     display: flex;
     gap: 1rem;
     align-items: center;
+    margin-bottom: 1rem;
   }
   .load-controls-settings {
     margin-block-start: 0 !important;
