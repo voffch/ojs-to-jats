@@ -4,7 +4,7 @@
 // https://jats.nlm.nih.gov/archiving/tag-library/1.4/chapter/tag-multi-lang-articles.html
 // ? @lang-variant @lang-source @lang-focus
 
-import { genAuthorMeta, licenses } from "./metadataTemplates";
+import { genAuthorMeta } from "./metadataTemplates";
 
 function createXmlWrapper(articleType, lang) {
 	const parser = new DOMParser();
@@ -62,6 +62,54 @@ export default function generateJatsXML(jmeta, ameta) {
     }
     return date;
 	}
+
+  function makeLicenseParagraphText(licenseUrl, lang) {
+    const licenseTexts = {
+      'by' : {
+        en : 'This article is licensed under a Creative Commons Attribution 4.0 International License (CC BY 4.0)',
+        ru : 'Эта статья распространяется на условиях лицензии Creative Commons Attribution 4.0 International (CC BY 4.0)',
+      },
+      'by-nc' : {
+        en : 'This article is distributed under the terms of the Creative Commons Attribution-NonCommercial 4.0 International License (CC BY-NC 4.0)',
+        ru : 'Эта статья распространяется на условиях лицензии Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)',
+      },
+      'by-nc-nd' : {
+        en : 'This article is distributed under the terms of the Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License (CC BY-NC-ND 4.0)',
+        ru : 'Эта статья распространяется на условиях лицензии Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)',
+      },
+      'by-nc-sa' : {
+        en : 'This article is distributed under the terms of the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License (CC BY-NC-SA 4.0)',
+        ru : 'Эта статья распространяется на условиях лицензии Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)',
+      },
+      'by-nd' : {
+        en : 'This article is licensed under a Creative Commons Attribution-NoDerivatives 4.0 International License (CC BY-ND 4.0)',
+        ru : 'Эта статья распространяется на условиях лицензии Creative Commons Attribution-NoDerivatives 4.0 International (CC BY-ND 4.0)',
+      },
+      'by-sa' : {
+        en : 'This article is licensed under a Creative Commons Attribution-ShareAlike 4.0 International License (CC BY-SA 4.0)',
+        ru : 'Эта статья распространяется на условиях лицензии Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)',
+      },
+      'zero' : {
+        en : 'The author(s) have dedicated this work to the public domain under the Creative Commons CC0 Public Domain Dedication',
+        ru : 'Автор(ы) передали данное произведение в общественное достояние согласно Creative Commons CC0 Public Domain Dedication',
+      },
+    }
+    let text = null;
+    const urlMatch = licenseUrl.match(/https:\/\/creativecommons\.org\/(?:licenses|publicdomain)\/([^\/]+)\/([^\/]+)/);
+    if (urlMatch) {
+      const [type, version] = urlMatch.slice(1);
+      if (type in licenseTexts) {
+        text = licenseTexts[type][lang];
+        if (type !== 'zero' && version !== '4.0') {
+          text = text.replace('4.0', version);
+        }
+      }
+    }
+    if (!text) {
+      text = (lang === 'ru') ? `Эта статья распространяется на условиях открытой лицензии ${licenseUrl}` : `This article is licensed under an open license  ${licenseUrl}`;
+    }
+    return text;
+  }
 
 	const xml = createXmlWrapper(ameta.articleType, ameta.primaryLanguage);
   const a = xml.getElementsByTagName('article')[0];
@@ -266,46 +314,47 @@ export default function generateJatsXML(jmeta, ameta) {
   // one permissions element
   if (ameta.licenseUrl || ameta.copyrightHolders.en || ameta.copyrightHolders.ru) {
     const permissions = xml.createElementNS(ns, 'permissions');
-    for (const lang in ameta.copyrightHolders) {
-      if (ameta.copyrightHolders[lang]) {
-        const copyrightStatement = xml.createElementNS(ns, 'copyright-statement');
-        copyrightStatement.setAttributeNS(xmlns, 'lang', lang);
-        copyrightStatement.textContent = `Copyright © ${ameta.copyrightYear ? (ameta.copyrightYear + ' ') : ''}${ameta.copyrightHolders[lang]}`;
-        permissions.appendChild(copyrightStatement);
+    if (ameta.licenseUrl !== 'https://creativecommons.org/publicdomain/zero/1.0/') {
+      for (const lang in ameta.copyrightHolders) {
+        if (ameta.copyrightHolders[lang]) {
+          const copyrightStatement = xml.createElementNS(ns, 'copyright-statement');
+          copyrightStatement.setAttributeNS(xmlns, 'lang', lang);
+          copyrightStatement.textContent = `© ${ameta.copyrightYear ? (ameta.copyrightYear + ' ') : ''}${ameta.copyrightHolders[lang]}`;
+          if (!ameta.licenseUrl) { // commercial license
+            copyrightStatement.textContent += (lang === 'ru') ? '. Все права защищены.' : '. All rights reserved.';
+          }
+          permissions.appendChild(copyrightStatement);
+        }
+      }
+      if (ameta.copyrightYear) {
+        const copyrightYear = xml.createElementNS(ns, 'copyright-year');
+        copyrightYear.textContent = ameta.copyrightYear;
+        permissions.appendChild(copyrightYear);
+      }
+      for (const lang in ameta.copyrightHolders) {
+        if (ameta.copyrightHolders[lang]) {
+          const copyrightHolder = xml.createElementNS(ns, 'copyright-holder');
+          copyrightHolder.setAttributeNS(xmlns, 'lang', lang);
+          copyrightHolder.textContent = ameta.copyrightHolders[lang];
+          permissions.appendChild(copyrightHolder);
+        }
       }
     }
-    if (ameta.copyrightYear) {
-      const copyrightYear = xml.createElementNS(ns, 'copyright-year');
-      copyrightYear.textContent = ameta.copyrightYear;
-      permissions.appendChild(copyrightYear);
-    }
-    for (const lang in ameta.copyrightHolders) {
-      if (ameta.copyrightHolders[lang]) {
-        const copyrightHolder = xml.createElementNS(ns, 'copyright-holder');
-        copyrightHolder.setAttributeNS(xmlns, 'lang', lang);
-        copyrightHolder.textContent = ameta.copyrightHolders[lang];
-        permissions.appendChild(copyrightHolder);
-      }
-    }
-    if (ameta.licenseUrl.includes('creativecommons')) {
-      const freeToRead = xml.createElementNS('http://www.niso.org/schemas/ali/1.0/', 'free_to_read');
-      permissions.appendChild(freeToRead);
-    }
-    if (ameta.licenseUrl) {
-      const license = xml.createElementNS(ns, 'license');
-      if (ameta.licenseUrl.includes('creativecommons')) {
+    if (ameta.licenseUrl) { // open license
+      for (const lang of ['en', 'ru']) {
+        const license = xml.createElementNS(ns, 'license');
+        license.setAttributeNS(xmlns, 'lang', lang);
         license.setAttribute('license-type', 'open-access');
-      }
-      license.setAttributeNS(xlinkns, 'href', ameta.licenseUrl);
-      const licenseParagraphText = licenses[ameta.licenseUrl];
-      if (licenseParagraphText && licenseParagraphText !== 'Иное') { // wtf is Иное anyway?
+        license.setAttributeNS(xlinkns, 'href', ameta.licenseUrl);
         const licenseP = xml.createElementNS(ns, 'license-p');
-        licenseP.textContent = licenseParagraphText;
+        licenseP.textContent = makeLicenseParagraphText(ameta.licenseUrl, lang);
         license.appendChild(licenseP);
+        permissions.appendChild(license);
       }
-      permissions.appendChild(license);
     }
-    articleMeta.appendChild(permissions);
+    if (permissions.children.length > 0) {
+      articleMeta.appendChild(permissions);
+    }
   }
   if (ameta.pageUrl) {
     const selfUri = xml.createElementNS(ns, 'self-uri');

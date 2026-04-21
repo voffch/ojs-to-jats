@@ -2,7 +2,7 @@
 import { ref, watch } from 'vue';
 import SelectInput from './SelectInput.vue';
 import TextInput from './TextInput.vue';
-import { licenses } from '../metadataTemplates';
+import { ccLicenses, otherLicenses } from '../metadataTemplates';
 
 const model = defineModel({
   type: String,
@@ -26,17 +26,21 @@ const props = defineProps({
 const selectedLicense = ref(model.value);
 
 watch(model, () => {
-  if (model.value in licenses) {
+  if (model.value in ccLicenses) {
     selectedLicense.value = model.value;
+  } else if (model.value) {
+    selectedLicense.value = 'Другая открытая лицензия';
   } else {
-    selectedLicense.value = 'Иное';
+    selectedLicense.value = 'Закрытая лицензия';
   }
 }, {immediate : true});
 
 function handleSelect(e) {
   const selectedLicense = e.target.value;
-  if (selectedLicense !== 'Иное') {
+  if (selectedLicense in ccLicenses) {
     model.value = selectedLicense;
+  } else if (selectedLicense === 'Закрытая лицензия') {
+    model.value = '';
   }
 };
 </script>
@@ -44,10 +48,11 @@ function handleSelect(e) {
 <template>
   <SelectInput 
     caption="Тип лицензии"
-    :options="licenses"
+    :options="{ ...ccLicenses, ...otherLicenses }"
     v-model="selectedLicense"
     @change="handleSelect" />
   <TextInput 
+    v-if="selectedLicense != 'Закрытая лицензия'"
     caption="Ссылка на лицензию" 
     :pattern="pattern"
     :showOptions="showOptions" 
