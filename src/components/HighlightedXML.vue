@@ -22,7 +22,7 @@ const props = defineProps({
 
 const xmlPretty = computed(() => {
   if (props.xmlString) {
-		return xmlFormat(props.xmlString, { indentation: ' ' });
+		return xmlFormat(props.xmlString, { indentation: ' ', collapseContent: true });
   } else {
     return null;
   }
