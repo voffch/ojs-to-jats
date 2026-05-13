@@ -861,12 +861,12 @@ async function loadByApi() {
     const rukey = Object.keys(pub.abstract).find(key => key.includes('ru'));
     const enkey = Object.keys(pub.abstract).find(key => key.includes('en'));
     articleMeta.value.titles = {
-      en : pub.fullTitle[enkey] ? pub.fullTitle[enkey] : '',
-      ru : pub.fullTitle[rukey] ? pub.fullTitle[rukey] : ''
+      en : pub.fullTitle[enkey] ?? '',
+      ru : pub.fullTitle[rukey] ?? ''
     };
     articleMeta.value.abstracts = {
-      en : pub.abstract[enkey] ? pub.abstract[enkey] : '',
-      ru : pub.abstract[rukey] ? pub.abstract[rukey] : ''
+      en : pub.abstract[enkey] ?? '',
+      ru : pub.abstract[rukey] ?? ''
     };
     articleMeta.value.keywords = {
       en : pub.keywords[enkey] ? pub.keywords[enkey].join('; ') : '',
@@ -878,15 +878,15 @@ async function loadByApi() {
       const tempAuthor = {
         ...genAuthorMeta(),
         surnames : {
-          en : a.familyName[enkey] ? a.familyName[enkey] : '',
-          ru : a.familyName[rukey] ? a.familyName[rukey] : ''
+          en : a.familyName[enkey] ?? '',
+          ru : a.familyName[rukey] ?? ''
         },
         givennames : {
-          en : a.givenName[enkey] ? a.givenName[enkey] : '',
-          ru : a.givenName[rukey] ? a.givenName[rukey] : ''
+          en : a.givenName[enkey] ?? '',
+          ru : a.givenName[rukey] ?? ''
         },
-        email : a.email,
-        orcid : a.orcid,
+        email : a.email ?? '',
+        orcid : a.orcid ?? '',
         affiliations : {
           en : '',
           ru : ''
@@ -894,8 +894,8 @@ async function loadByApi() {
       }
       if (a.affiliation) {
         tempAuthor.affiliations = {
-          en : a.affiliation[enkey] ? a.affiliation[enkey] : '',
-          ru : a.affiliation[rukey] ? a.affiliation[rukey] : ''
+          en : a.affiliation[enkey] ?? '',
+          ru : a.affiliation[rukey] ?? ''
         }
       } else if (a.affiliations) { // OJS 3.5
         tempAuthor.affiliations = {
@@ -906,14 +906,14 @@ async function loadByApi() {
       addAuthor(articleMeta.value, tempAuthor);
     });
     articleMeta.value.copyrightHolder = {
-      en : pub.copyrightHolder[enkey] ? pub.copyrightHolder[enkey] : '',
-      ru : pub.copyrightHolder[rukey] ? pub.copyrightHolder[rukey] : ''
+      en : pub.copyrightHolder[enkey] ?? '',
+      ru : pub.copyrightHolder[rukey] ?? ''
     };
-    articleMeta.value.licenseUrl = pub.licenseUrl;
-    articleMeta.value.copyrightYear = pub.copyrightYear;//.toString();
-    articleMeta.value.datePublished = pub.datePublished;
+    articleMeta.value.licenseUrl = pub.licenseUrl ?? '';
+    articleMeta.value.copyrightYear = pub.copyrightYear ?? '';//.toString();
+    articleMeta.value.datePublished = pub.datePublished ?? '';
     // articleMeta.value.dateIssuePublished = pub.datePublished;
-    articleMeta.value.pages = pub.pages;
+    articleMeta.value.pages = pub.pages ?? '';
     articleMeta.value.useElocationId = articleMeta.value.pages && !articleMeta.value.pages.includes('-');
     articleMeta.value.fundings = {
       en : pub.supportingAgencies[enkey] ? pub.supportingAgencies[enkey].join('; ') : '',
