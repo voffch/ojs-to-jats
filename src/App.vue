@@ -49,7 +49,12 @@ onMounted(() => {
         const url = new URL(callingUrl.value);
         const segments = url.pathname.split('/');
         submissionId.value = segments.pop() || segments.pop(); // Handles potential trailing slashes
-        baseUrl.value = callingUrl.value.split(viewString)[0];
+        const baseUrlCandidate = callingUrl.value.split(viewString)[0];
+        if (/\/(?:en|ru)\/$/.test(baseUrlCandidate)) { // detecting the language codes from OJS 3.5 URLs
+          baseUrl.value = baseUrlCandidate.slice(0, -3);
+        } else {
+          baseUrl.value = baseUrlCandidate;
+        }
       }
     });
   }
